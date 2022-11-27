@@ -2,11 +2,15 @@ import "CoreLibs/graphics"
 import "CoreLibs/object"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
+import "CoreLibs/frameTimer"
 import "CoreLibs/crank"
 import "CoreLibs/ui"
+import "CoreLibs/animation"
 import "planemanager"
 import "gun"
 import "player"
+import "cannon"
+import "explosion"
 
 
 
@@ -35,9 +39,16 @@ local function resetTimer()
 	timer = playdate.timer.new(30000,0, 10000, playdate.easingFunctions.inExpo)
 end
 
+local function explode()
+	frameTimer = playdate.timer.new(480,1000, 11000)
+
+end
+
 local function initialize()
 	score = 0
 	
+	cannon = cannon()
+	cannon:add()
 
     gun = gun()
 	gun:add()
@@ -49,6 +60,21 @@ local function initialize()
 	pm:spawnPlane(timer, 1000)
 	
 
+	local bkgd = gfx.image.new("images/bkgd")
+	bg = gfx.sprite.new(bkgd)
+	bg.rx=1250
+	bg.ry=240
+	
+	bg:moveTo(800,0)
+	bg:setZIndex(0)
+	bg:add()
+
+
+	--explosion = gfx.imagetable.new("images/Explosion")
+	--explode()
+	--exp:add()
+	
+	
 
     local playerImage = gfx.image.new("images/ui")
 	ui = gfx.sprite.new(playerImage)
@@ -74,6 +100,10 @@ end
 
 initialize()
 
+local explosion = gfx.imagetable.new("images/Explosion")
+
+
+
 local function gunLocation(x,y)
 
 
@@ -83,6 +113,9 @@ sidecheck = player:getSide() + (x * xintensity)
 if(upcheck <= 360 and upcheck >= 120 and x == 0) then 
 	player:setUp(player:getUp() + (y * yintensity))
 	pm:setPlanes(player:getSide(), player:getUp())
+	cannon:setShots((x * xintensity), (y * yintensity))
+	--background not moving correctly
+	setBG(player:getSide(), player:getUp())
 end
 if (player:getSide() >= 1600) then 
 	player:setSide(0)
@@ -93,9 +126,21 @@ elseif(player:getSide() < 0) then
 elseif(y == 0) then 
 	player:setSide(player:getSide() - (x * xintensity))
 	pm:setPlanes(player:getSide(), player:getUp())
+	cannon:setShots((x * xintensity), (y * yintensity))
+		--background not moving correctly
+	setBG(player:getSide(), player:getUp())
 end
 
 end
+
+function setBG(x, y)
+	local xd = bg.rx - x -250
+	
+	local yd = bg.ry - y + 120 
+	
+	bg:moveTo(xd,yd)
+end
+
 
 
 local function playerControls()
@@ -118,7 +163,7 @@ local function playerControls()
 	end
 
 	if(playdate.buttonIsPressed(playdate.kButtonB)) then 
-		gun:shoot() 
+		cannon:shoot() 
 
 		
 	end
@@ -158,8 +203,17 @@ function shotCollisions()
 				
 			end
 
+			if(sprite1:isa(Plane) and sprite2:isa(cannonShot)) then
+				sprite1:destroy()
+				
+			
+			elseif(sprite2:isa(Plane) and sprite1:isa(cannonShot)) then
+				sprite2:destroy()
+				
+			end
+
 			if(sprite1:isa(gun) or sprite2:isa(gun)) then
-				gfx.drawText(77, 0,30)
+				
 			end
 			
 	end
@@ -202,6 +256,7 @@ end
 function playdate.update()
 
 	playdate.timer.updateTimers()
+	playdate.frameTimer.updateTimers()
 	
 	
 	playerControls()
@@ -220,11 +275,8 @@ function playdate.update()
 	
 
 	gfx.sprite.update()
-	crankDock()
+	
 	uiSprites()
-	
-	
-	
 	gfx.drawText(string.format("%06d", score), 172, 210)
 	
 
@@ -233,7 +285,13 @@ function playdate.update()
 	pm:radar()
 	radar()
 	heightRet()
-	--gfx.drawText(tostring(pm:getIndex()), 0,0)
+
+	
+	--gfx.drawText(math.floor(frameTimer.value/1000), 0,0)
 	--gfx.drawText(player:getUp(), 0,20)
+	--gfx.drawText(bg.y, 0,0)
+	--gfx.drawText(player:getSide(), 70,20)
+	--gfx.drawText(bg.x, 70,0)
+	crankDock()
     
 end
