@@ -11,11 +11,13 @@ import "gun"
 import "player"
 import "cannon"
 import "explosion"
+import "animations"
 
 
 
 
 local gfx <const> = playdate.graphics
+anim = animations()
 
 
 local xintensity = 1
@@ -45,6 +47,9 @@ local function explode()
 end
 
 local function initialize()
+
+	e = {}
+
 	score = 0
 	
 	cannon = cannon()
@@ -70,10 +75,6 @@ local function initialize()
 	bg:add()
 
 
-	--explosion = gfx.imagetable.new("images/Explosion")
-	--explode()
-	--exp:add()
-	
 	
 
     local playerImage = gfx.image.new("images/ui")
@@ -100,7 +101,7 @@ end
 
 initialize()
 
-local explosion = gfx.imagetable.new("images/Explosion")
+
 
 
 
@@ -164,12 +165,15 @@ local function playerControls()
 
 	if(playdate.buttonIsPressed(playdate.kButtonB)) then 
 		cannon:shoot() 
-
+	
+		
 		
 	end
 
 	
 end
+
+
 
 function uiSprites()
 	if(playdate.buttonIsPressed(playdate.kButtonA)) then 
@@ -251,6 +255,24 @@ function crankDock()
 
 end
 
+function cannonCheck()
+	--gfx.drawText(cannon.cannonTimer.value, 0,0)
+	--gfx.drawText(cannon.timerMax, 50,0)
+	if(cannon.cannonTimer.value == cannon.timerMax) then
+		cannon.flag = true
+		
+	end
+	if(cannon.cannonTimer.value > 1) then
+		cannon:clear()
+		
+	end
+end
+
+function cannonUI()
+	gfx.fillRect(52,mapping(cannon.cannonTimer.value, 5, 0, 193, 233),5,29)
+end
+
+
 
 
 function playdate.update()
@@ -263,6 +285,7 @@ function playdate.update()
 	pm:incrementScale()
 	pm:planeTrigger()
 	shotCollisions()
+	
 
 
 	
@@ -275,7 +298,9 @@ function playdate.update()
 	
 
 	gfx.sprite.update()
-	
+	cannonCheck()
+	anim:playAnimations()
+
 	uiSprites()
 	gfx.drawText(string.format("%06d", score), 172, 210)
 	
@@ -285,13 +310,16 @@ function playdate.update()
 	pm:radar()
 	radar()
 	heightRet()
+	cannonUI()
 
+	--gfx.fillRect(52,193,5,29)
+	--gfx.fillRect(52,223,5,29)
 	
 	--gfx.drawText(math.floor(frameTimer.value/1000), 0,0)
 	--gfx.drawText(player:getUp(), 0,20)
 	--gfx.drawText(bg.y, 0,0)
 	--gfx.drawText(player:getSide(), 70,20)
-	--gfx.drawText(bg.x, 70,0)
+	--gfx.drawText(cannon.cannonTimer.value, 70,0)
 	crankDock()
     
 end

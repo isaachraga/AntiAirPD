@@ -19,7 +19,7 @@ function cannonShot:init(x, y)
     self:moveTo(x, y)
     
     
-    self:setImage(image)
+    --self:setImage(image)
     
     self:setZIndex(32766)
     

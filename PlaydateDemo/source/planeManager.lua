@@ -22,6 +22,7 @@ end
 
 function PlaneManager:init(time, p, pscore)
     a = {}
+    --e = {}
     self:resetTimer()
     --multi stage random
     resetNum = math.random(5, 10)
@@ -54,33 +55,33 @@ function PlaneManager:spawnPlane(time, d, s)
     local ya = math.random(122, 358)
     
     if(xa > 250 and xa < 1350) then
-        local p = Plane(x, y, d, s, a, dummy, xa, ya, score)
+        local p = Plane(x, y, d, s, a, dummy, xa, ya, score, self)
         p:setPosition(xa - player:getSide() + 200, ya - player:getUp() + 120)
         p:setZIndex(index)
         p:add()
         table.insert(a, p)
         
     elseif(xa >=1350) then 
-        local p = Plane(x, y, d, s, a, dummy, xa-1600, ya, score)
+        local p = Plane(x, y, d, s, a, dummy, xa-1600, ya, score, self)
         p:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p:setZIndex(index)
         p:add()
         table.insert(a, p)
         
-        local p2 = Plane(x, y, d, s, a, p, xa, ya, score)
+        local p2 = Plane(x, y, d, s, a, p, xa, ya, score, self)
         p2:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p2:setZIndex(index)
         p2:add()
         table.insert(a, p2)
         
     elseif(xa <=250) then
-        local p = Plane(x, y, d, s, a, dummy, xa+1600, ya, score)
+        local p = Plane(x, y, d, s, a, dummy, xa+1600, ya, score,self)
         p:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p:setZIndex(index)
         p:add()
         table.insert(a, p)
         
-        local p2 = Plane(x, y, d, s, a, p, xa, ya, score)
+        local p2 = Plane(x, y, d, s, a, p, xa, ya, score, self)
         p2:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p2:setZIndex(index)
         p2:add()
@@ -95,6 +96,7 @@ end
 function PlaneManager:addScore(points)
  self.score = self.score + points
 end
+
 
 function PlaneManager:radar()
 
@@ -136,7 +138,6 @@ function PlaneManager:setPlanes(x,y)
 
     for key,value in pairs(a) do
         xd = value:getSide() - x + 200
-        --yd = value:getUp() - y +120
         yd = value:getUp()- y + 120 
     value:setPosition(xd,yd)
     end

@@ -1,5 +1,6 @@
 
 import "CoreLibs/timer"
+import "explosion"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
@@ -8,7 +9,7 @@ local gfx <const> = pd.graphics
 
 class('Plane').extends(gfx.sprite)
 
-function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore)
+function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm)
     local image = gfx.image.new("images/plane")
     self.scaleSize = playdate.timer.new(20000, 50, 500, playdate.easingFunctions.inExpo)
     self.scaleSize2 = nil
@@ -28,6 +29,7 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore)
     self:setImage(image)
     self:setScale(self.scaleSize.value/1000)
     self:setCollideRect(0,0,self:getSize())
+    self.pm = pm
     if(dummy ~= nil) then
         self.dummyPlane = dummy
     end
@@ -44,7 +46,7 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore)
 	
 	--playerSprite:setScale(planeScale)
 	self.hm:add()
-	self.hm.setZIndex=32767
+	--self.hm.setZIndex=32767
 	self.hm:setScale(0)
     
     
@@ -137,6 +139,9 @@ function Plane:destroy()
             table.remove(a, k)
             score = score + 1
             self.hm:setScale(0)
+            --*****not setting scale correctly
+            exp = explosion(self.rx, self.ry, self:getZIndex(), self:getScale()*self:getScale()+.6)
+            anim:addAnimation(exp)
             self:remove()
         end
     end

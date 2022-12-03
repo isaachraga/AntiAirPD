@@ -1,0 +1,10 @@
+
+-firing ui images
+-explosion animation size tweaking
+-start screen with selectable options
+-game over screen
+-hi scores
+-options
+-sfx: moving clicks, airplanes, mg shot, cannon shot
+-read through sdk
+-clean and lable code
