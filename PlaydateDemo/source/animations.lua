@@ -53,10 +53,11 @@ end
 
 
 
-function animations:removeAnimation(e)
+function animations:removeAllAnimations()
     for k, v in pairs(ani) do
-        if(v == e) then
             table.remove(ani, k)
-        end 
     end
+    for k, v in pairs(aniC) do
+        table.remove(aniC, k)
+end
 end

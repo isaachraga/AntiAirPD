@@ -35,18 +35,15 @@ end
 
 function PlaneManager:incrementScale()
     for key,value in pairs(a) do
-        
-            value:incrementScale()
-            local x, y, ystart
-            x = value:getSize(width) 
-            y = value:getSize(height)*.2
+
+        value:incrementScale()
+        local x, y, ystart
+        x = value:getSize(width) 
+        y = value:getSize(height)*.2
         ystart = value:getSize(height) *.2
-            
-            value:setCollideRect(0,ystart,x,y)
-        
-        
-        end
-    
+        value:setCollideRect(0,ystart,x,y)
+
+    end
 end
 
 function PlaneManager:spawnPlane(time, d, s)
@@ -143,6 +140,8 @@ function PlaneManager:setPlanes(x,y)
     end
 end
 
+
+
 function PlaneManager:getPlaneScale()
     return triggerTimer.value
     
@@ -151,17 +150,35 @@ end
 function PlaneManager:resetPlaneHMScale()
     for key,value in pairs(a) do
         value:resetHMScale()
-        end
+    end
 end
 function PlaneManager:planeTrigger()
     
-if(triggerTimer.value/1000 >= resetNum) then
-    self:resetTimer()
-    self:spawnPlane(1000)
-    resetNum = math.random(5, 10)
-end
+    if(triggerTimer.value/1000 >= resetNum) then
+        self:resetTimer()
+        self:spawnPlane(1000)
+        resetNum = math.random(5, 10)
+    end
 end
 
 function PlaneManager:getIndex()
-return self.index
+    return self.index
+end
+
+function PlaneManager:gameOverCheck()
+    for key,value in pairs(a) do
+        if value.radarDistance.value < 75 then
+            self:removeAllPlanes()
+            return true
+        else
+            
+            return false
+        end
+    end
+end
+
+function PlaneManager:removeAllPlanes()
+    for key,value in pairs(a) do
+        table.remove(a, key)
+    end
 end

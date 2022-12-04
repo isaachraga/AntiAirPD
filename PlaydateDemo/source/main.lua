@@ -2,7 +2,7 @@ import "CoreLibs/graphics"
 import "CoreLibs/object"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
-import "CoreLibs/frameTimer"
+--import "CoreLibs/frameTimer"
 import "CoreLibs/crank"
 import "CoreLibs/ui"
 import "CoreLibs/animation"
@@ -15,8 +15,8 @@ import "animations"
 
 
 
-
-local gfx <const> = playdate.graphics
+local pd <const> = playdate
+local gfx <const> = pd.graphics
 anim = animations()
 
 
@@ -24,16 +24,16 @@ local xintensity = 1
 local yintensity = .1
 
 
+local menu = 0
 
 
 
 
 
-local playerSprite = nil
-local playerSpeed = 5
---max 10 min .05
---if plane scale gets to 10 then its game over
---do exponential distance calc
+
+
+--plane scalemax 10 min .05
+
 local planeScale = 1
 
 local function resetTimer()
@@ -41,26 +41,53 @@ local function resetTimer()
 	timer = playdate.timer.new(30000,0, 10000, playdate.easingFunctions.inExpo)
 end
 
-local function explode()
-	frameTimer = playdate.timer.new(480,1000, 11000)
-
+local function initialize()
+	cannon = cannon()
+	gun = gun()
+	player = player(200, 360)
+	pm = PlaneManager(timer, player, score)
+	menu = 0
+	startInitialize()
 end
 
-local function initialize()
+function startInitialize()
+	local startImage = gfx.image.new("images/StartScreen")
+	ss = gfx.sprite.new(startImage)
+	ss:moveTo(200,120)
+	ss:add()
+	ss:setZIndex(32767)
 
-	e = {}
 
-	score = 0
+
+--data store for score
 	
-	cannon = cannon()
+	--start = true
+	--gameOver = false
+end
+
+--*****transition back into game is a little glitchy
+
+function gameOverInitialize()
+	gfx.sprite:removeAll()
+	--anim:removeAllAnimations()
+	pm:removeAllPlanes()
+	resetTimer()
+	
+end
+
+function gameInitialize()
+	e = {}
+	score = 0
+	--*****reset not working
+	--cannon = cannon()
 	cannon:add()
 
-    gun = gun()
+    --gun = gun()
 	gun:add()
 
-	player = player(200, 360)
+	--player = player(200, 360)
 
-	pm = PlaneManager(timer, player, score)
+	--pm = PlaneManager(timer, player, score)
 	pm:add()
 	pm:spawnPlane(timer, 1000)
 	
@@ -90,11 +117,8 @@ local function initialize()
 	hr:add()
 	hr:setZIndex(32767)
 
-
-
-
---data store for score
 	resetTimer()
+
 end
 
 
@@ -164,13 +188,10 @@ local function playerControls()
 	end
 
 	if(playdate.buttonIsPressed(playdate.kButtonB)) then 
-		cannon:shoot() 
-	
-		
-		
+		cannon:shoot()
 	end
 
-	
+
 end
 
 
@@ -179,13 +200,11 @@ function uiSprites()
 	if(playdate.buttonIsPressed(playdate.kButtonA)) then 
 
 		gfx.fillCircleAtPoint(364,208,13)
-		
 	end
 
 	if(playdate.buttonIsPressed(playdate.kButtonB)) then 
 
 		gfx.fillCircleAtPoint(36,208,13)
-		
 	end
 end
 
@@ -200,26 +219,16 @@ function shotCollisions()
 			-- do something with the colliding sprites
 			if(sprite1:isa(Plane) and sprite2:isa(gun)) then
 				sprite1:damage(5)
-				
-			
 			elseif(sprite2:isa(Plane) and sprite1:isa(gun)) then
 				sprite2:damage(5)
-				
 			end
 
 			if(sprite1:isa(Plane) and sprite2:isa(cannonShot)) then
 				sprite1:destroy()
-				
-			
 			elseif(sprite2:isa(Plane) and sprite1:isa(cannonShot)) then
 				sprite2:destroy()
-				
 			end
 
-			if(sprite1:isa(gun) or sprite2:isa(gun)) then
-				
-			end
-			
 	end
 end
 
@@ -256,15 +265,11 @@ function crankDock()
 end
 
 function cannonCheck()
-	--gfx.drawText(cannon.cannonTimer.value, 0,0)
-	--gfx.drawText(cannon.timerMax, 50,0)
 	if(cannon.cannonTimer.value == cannon.timerMax) then
 		cannon.flag = true
-		
 	end
 	if(cannon.cannonTimer.value > 1) then
 		cannon:clear()
-		
 	end
 end
 
@@ -272,30 +277,54 @@ function cannonUI()
 	gfx.fillRect(52,mapping(cannon.cannonTimer.value, 5, 0, 193, 233),5,29)
 end
 
+function gameOverCheck()
+	if (pm:gameOverCheck() == true and menu == 1) then
+		menu = 2 
+	
+		gameOverInitialize()
+		
+	end
+end
+
+function startUpdate()
+	gfx.sprite.update()
+	--gfx.drawText("hello there", 172, 210)
+
+	if pd.buttonJustPressed(pd.kButtonA) then
+		gameInitialize()
+		ss:remove()
+		menu = 1
+	end
+
+end
+
+function gameOverUpdate()
+	gfx.sprite.update()
+	gfx.fillRect(0,0,400,240)
+	if pd.buttonJustPressed(pd.kButtonA) then
+		gameInitialize()
+		menu = 1 
+		
+		
+		
+	end
+
+end
 
 
 
-function playdate.update()
+
+function gameUpdate()
 
 	playdate.timer.updateTimers()
-	playdate.frameTimer.updateTimers()
-	
-	
+	--playdate.frameTimer.updateTimers()
+
+	gameOverCheck()
+
 	playerControls()
 	pm:incrementScale()
 	pm:planeTrigger()
 	shotCollisions()
-	
-
-
-	
-
-	
-	
-	
-	
-	
-	
 
 	gfx.sprite.update()
 	cannonCheck()
@@ -303,7 +332,6 @@ function playdate.update()
 
 	uiSprites()
 	gfx.drawText(string.format("%06d", score), 172, 210)
-	
 
 	gun:clear()
 	pm:resetPlaneHMScale()
@@ -322,4 +350,15 @@ function playdate.update()
 	--gfx.drawText(cannon.cannonTimer.value, 70,0)
 	crankDock()
     
+end
+
+function pd.update()
+	if(menu == 0) then
+		startUpdate()
+	elseif(menu == 2) then
+		gameOverUpdate()
+	else
+		gameUpdate()
+	end
+
 end

@@ -3,8 +3,9 @@
 -explosion animation size tweaking
 -start screen with selectable options
 -game over screen
+-radar flashing
 -hi scores
 -options
--sfx: moving clicks, airplanes, mg shot, cannon shot
+-sfx: moving clicks, airplanes, mg shot, cannon shot, radar beeping
 -read through sdk
 -clean and lable code
