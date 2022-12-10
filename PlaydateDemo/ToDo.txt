@@ -1,11 +1,15 @@
-
+-restart not working correctly
 -firing ui images
 -explosion animation size tweaking
--start screen with selectable options
--game over screen
+-signify a new high score
 -radar flashing
--hi scores
 -options
+-controls
 -sfx: moving clicks, airplanes, mg shot, cannon shot, radar beeping
 -read through sdk
 -clean and lable code
+
+
+
+
+

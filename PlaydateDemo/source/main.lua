@@ -18,6 +18,14 @@ import "animations"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 anim = animations()
+local highscore = {}
+
+local option = 0
+
+test = 50
+knum1= 0
+knum2 = 0
+lastMenu = 0
 
 
 local xintensity = 1
@@ -57,12 +65,23 @@ function startInitialize()
 	ss:add()
 	ss:setZIndex(32767)
 
+	
+if(pd.datastore.read(data) == nil) then
+	table.insert(highscore, 0)
+	pd.datastore.write(highscore, data)
+
+	
+
+
+end
+	
+	--gfx.drawText(tostring(pd.datastore.read(data)), 0,0)
+
 
 
 --data store for score
 	
-	--start = true
-	--gameOver = false
+
 end
 
 --*****transition back into game is a little glitchy
@@ -72,6 +91,26 @@ function gameOverInitialize()
 	--anim:removeAllAnimations()
 	pm:removeAllPlanes()
 	resetTimer()
+	local endImage = gfx.image.new("images/GameOver")
+	gg = gfx.sprite.new(endImage)
+	gg:moveTo(200,120)
+	gg:add()
+	gg:setZIndex(32767)
+
+
+	testTable = pd.datastore.read(data)
+	for k,v in pairs(testTable) do
+		--start of table
+		if(k == 1)then
+			if(v < score)then
+				table.insert(highscore, score)
+				pd.datastore.write(highscore, data)
+				
+			end
+
+		end
+		
+	end
 	
 end
 
@@ -288,27 +327,147 @@ end
 
 function startUpdate()
 	gfx.sprite.update()
-	--gfx.drawText("hello there", 172, 210)
+	gfx.drawText("Start", 35, 210)
+	gfx.drawText("Controls", 125, 210)
+	gfx.drawText("Options", 235, 210)
+	gfx.drawText("Exit", 335, 210)
+	
 
-	if pd.buttonJustPressed(pd.kButtonA) then
-		gameInitialize()
-		ss:remove()
-		menu = 1
+	if(option == 0) then
+		gfx.drawRect(30, 205, 49, 27)
+		if(pd.buttonJustPressed(pd.kButtonA))then
+			gameInitialize()
+			ss:remove()
+			menu = 1
+		end
+		
+	elseif(option == 1) then
+		gfx.drawRect(120, 205, 72, 27)
+		if(pd.buttonJustPressed(pd.kButtonA))then
+			ss:setVisible(false)
+			
+			lastMenu = menu
+			menu = 3
+		end
+
+
+	elseif(option == 2) then
+		gfx.drawRect(230, 205, 64, 27)
+		--options
+
+	elseif(option == 3) then
+		gfx.drawRect(330, 205, 37, 27)
+		--exit
+
+	end
+
+	if pd.buttonJustPressed(pd.kButtonRight) then
+		if(option == 3) then 
+			option = 0
+		else
+		option += 1
+		end
+	end
+	if pd.buttonJustPressed(pd.kButtonLeft) then
+		if(option == 0) then 
+			option = 3
+		else
+		option -= 1
+		end
+	end
+	
+
+	
+	if pd.buttonJustPressed(pd.kButtonB) then
+		
+		pd.datastore.delete(data)
 	end
 
 end
 
 function gameOverUpdate()
 	gfx.sprite.update()
-	gfx.fillRect(0,0,400,240)
-	if pd.buttonJustPressed(pd.kButtonA) then
-		gameInitialize()
-		menu = 1 
+	--gfx.fillRect(0,0,400,240)
+
+	newtable = pd.datastore.read(data)
+	for k,v in pairs(newtable) do
+		gfx.drawText("High Score: " .. tostring(v), 150,120)
+	end
+	
+
+	gfx.drawText("Restart", 35, 210)
+	gfx.drawText("Controls", 125, 210)
+	gfx.drawText("Options", 235, 210)
+	gfx.drawText("Exit", 335, 210)
+	
+
+	if(option == 0) then
+		gfx.drawRect(30, 205, 72, 27)
+		if(pd.buttonJustPressed(pd.kButtonA))then
+			gg:remove()
+			gameInitialize()
+			
+			menu = 1
+		end
 		
-		
-		
+	elseif(option == 1) then
+		gfx.drawRect(120, 205, 72, 27)
+		if(pd.buttonJustPressed(pd.kButtonA))then
+			gg:setVisible(false)
+			
+			lastMenu = menu
+			menu = 3
+		end
+
+	elseif(option == 2) then
+		gfx.drawRect(230, 205, 64, 27)
+		--options
+
+	elseif(option == 3) then
+		gfx.drawRect(330, 205, 37, 27)
+		--exit
+
 	end
 
+	if pd.buttonJustPressed(pd.kButtonRight) then
+		if(option == 3) then 
+			option = 0
+		else
+		option += 1
+		end
+	end
+	if pd.buttonJustPressed(pd.kButtonLeft) then
+		if(option == 0) then 
+			option = 3
+		else
+		option -= 1
+		end
+	end
+
+end
+
+
+function controlsUpdate()
+	gfx.drawText("(Up OR Down) + Crank ====== Veritcal Aim", 25, 35)
+	gfx.drawText("(Left OR Right) + Crank ==== Horizontal Aim", 25, 62)
+	gfx.drawText("A ========================= Fire Machine Gun", 25, 89)
+	gfx.drawText("B ========================= Fire Cannon", 25, 116)
+
+	gfx.drawText("PRESS B TO RETURN", 140, 210)
+
+	if(pd.buttonJustPressed(pd.kButtonB))then
+		if(lastMenu == 0) then
+			ss:setVisible(true)
+		elseif(lastMenu == 2) then
+			gg:setVisible(true)
+		end
+		menu = lastMenu
+	end
+
+end
+
+function optionsUpdate()
+	
 end
 
 
@@ -339,23 +498,19 @@ function gameUpdate()
 	radar()
 	heightRet()
 	cannonUI()
-
-	--gfx.fillRect(52,193,5,29)
-	--gfx.fillRect(52,223,5,29)
-	
-	--gfx.drawText(math.floor(frameTimer.value/1000), 0,0)
-	--gfx.drawText(player:getUp(), 0,20)
-	--gfx.drawText(bg.y, 0,0)
-	--gfx.drawText(player:getSide(), 70,20)
-	--gfx.drawText(cannon.cannonTimer.value, 70,0)
 	crankDock()
     
 end
 
 function pd.update()
+	gfx.sprite.update()
 	if(menu == 0) then
 		startUpdate()
 	elseif(menu == 2) then
+		gameOverUpdate()
+	elseif(menu == 3) then
+		controlsUpdate()
+	elseif(menu == 4) then
 		gameOverUpdate()
 	else
 		gameUpdate()
