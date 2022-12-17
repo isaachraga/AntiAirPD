@@ -39,7 +39,7 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm)
     local hitmarker = gfx.image.new("images/HitMarker")
    
 	self.hm = gfx.sprite.new(hitmarker)
-    self.hm:setImageDrawMode("copy")
+    self.hm:setImageDrawMode(gfx.kDrawModeNXOR)
     
     
     
@@ -47,7 +47,7 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm)
 	--playerSprite:setScale(planeScale)
 	self.hm:add()
 	--self.hm.setZIndex=32767
-	self.hm:setScale(0)
+	self.hm:setVisible(false)
     
     
 end
@@ -101,13 +101,9 @@ end
 
 
 function Plane:damage(a)
-self.health = self.health - a
-
-
-self.hm:setScale(1)
-
-
-self:checkHealth()
+    self.health = self.health - a
+    self.hm:setVisible(true)
+    self:checkHealth()
 end
 
 function Plane:checkHealth()
@@ -117,7 +113,7 @@ end
 end
 
 function Plane:resetHMScale()
-    self.hm:setScale(0)
+    self.hm:setVisible(false)
     
 
 end
@@ -138,9 +134,9 @@ function Plane:destroy()
         if v == self then
             table.remove(a, k)
             score = score + 1
-            self.hm:setScale(0)
-            --*****not setting scale correctly
-            exp = explosion(self.rx, self.ry, self:getZIndex(), self:getScale()*self:getScale()+.6)
+            self.hm:setVisible(false)
+
+            exp = explosion(self.rx, self.ry, self:getZIndex(), mapping(self:getScale(), .05, 2,.4,20))
             anim:addAnimation(exp)
             self:remove()
         end

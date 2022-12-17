@@ -14,7 +14,7 @@ function gun:init()
     
     self:setImage(image)
     
-    self:setZIndex(32766)
+    self:setZIndex(32767)
     
    
 

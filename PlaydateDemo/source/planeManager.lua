@@ -182,3 +182,9 @@ function PlaneManager:removeAllPlanes()
         table.remove(a, key)
     end
 end
+
+function PlaneManager:setAllVisibile(value)
+    for key,value in pairs(a) do
+        value:setVisible(value)
+    end
+end

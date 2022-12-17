@@ -30,8 +30,8 @@ end
 
 --explosions need to adjust for scale
 function explosion:explode()
-    gfx.drawText(self.x, 0,0)
-    gfx.drawText(self.y, 50,0)
+    --gfx.drawText(self.x, 0,0)
+    --gfx.drawText(self.y, 50,0)
     if(math.floor(self.frameTimer.value/1000) < 11) then
         --self.exp:getImage(math.floor(self.frameTimer.value/1000)):drawScaled(self:screenPositionX(), self:screenPositionY(),10)
         self:setImage(self.exp:getImage(math.floor(self.frameTimer.value/1000)))

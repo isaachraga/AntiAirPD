@@ -1,11 +1,10 @@
--restart not working correctly
--firing ui images
--explosion animation size tweaking
--signify a new high score
+-make pseudo soundtrack for start and gg menu
+-gameover explosion?
+-add accessability functions
+-figure out a bkgd replacement, gray background
+-make sure that old assets are getting removed from their lists
 -radar flashing
--options
--controls
--sfx: moving clicks, airplanes, mg shot, cannon shot, radar beeping
+-sfx:airplanes, airplane explosion, radar beeping
 -read through sdk
 -clean and lable code
 

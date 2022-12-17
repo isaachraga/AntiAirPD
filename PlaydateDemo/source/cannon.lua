@@ -15,7 +15,7 @@ class('cannon').extends(gfx.sprite)
 function cannon:init()
     self.flag = true
     self.timerMax = 5
-    self.cannonTimer = playdate.timer.new(0,self.timerMax, self.timerMax)
+    self:initTimer()
 
     self.shots = {}
     for i = 1,7 do
@@ -31,6 +31,10 @@ function cannon:init()
   
 end
 
+function cannon:initTimer()
+    self.cannonTimer = playdate.timer.new(0,self.timerMax, self.timerMax)
+end
+
 function cannon:resetTimer()
     self.cannonTimer = playdate.timer.new(self.timerMax*1000,0, self.timerMax)
 end
@@ -40,14 +44,16 @@ function cannon:shoot()
 
     if(self.flag == true) then 
         for k, v in pairs(self.shots) do
-            v:setScale(cscale)
+            sca = math.random(20)/10+.5
+            v:setScale(sca)
             x = 100+math.random(200)
             y = 20+math.random(150)
 
             v:moveTo(x,y)
             v:setPos(x, y)
-            v:setCollideRect(0,0,20,20)
-            sca = math.random(20)/10+.5
+            v:setCollideRect(-10*sca, -10*sca, 20*sca, 20*sca)
+            
+            
             exp = explosion(x, y, 32767,sca)
             
             anim:addAnimationC(exp)
