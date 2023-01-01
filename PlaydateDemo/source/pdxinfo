@@ -1,6 +1,7 @@
-name=Template
-author=You
-description=This is template project
+name=Anti Air Artillery PD
+author=Isaac Hraga
+description=Defend yourself from the airplane attack for as long as you can!
 bundleID=com.organization.package
+imagePath=SystemAssets/
 version=0.0.1
-buildNumber=1
+launchSoundPath=sounds/MG

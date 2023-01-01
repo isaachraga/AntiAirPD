@@ -2,7 +2,6 @@ import "CoreLibs/graphics"
 import "CoreLibs/object"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
---import "CoreLibs/frameTimer"
 import "CoreLibs/crank"
 import "CoreLibs/ui"
 import "CoreLibs/animation"
@@ -12,6 +11,7 @@ import "player"
 import "cannon"
 import "explosion"
 import "animations"
+import "testOBJ"
 
 
 
@@ -27,6 +27,8 @@ local storedData = {}
 
 local option = 0
 
+
+
 aimTypeD = false
 invertX = false
 invertY = false
@@ -37,6 +39,7 @@ knum2 = 0
 lastMenu = 0
 crankSoundx = 0
 crankSoundy = 0
+noFlashing = false
 
 local newHighScore = false
 
@@ -75,7 +78,10 @@ local menu = pd.getSystemMenu()
 
 local menuItem, error = menu:addMenuItem("Controls", function()
 	lastMenu = menu
-	if(lastMenu == 0) then ss:setVisible(false) end
+	if(lastMenu == 0) then 
+		ss:setVisible(false) 
+		sstanim:setVisible(false)
+	end
 
 	if(lastMenu == 1) then
 		for key, value in pairs(playdate.timer.allTimers()) do
@@ -93,16 +99,27 @@ end)
 
 
 local function initialize()
-	cannon = cannon()
-	gun = gun()
-	player = player(200, 360)
-	pm = PlaneManager(timer, player, score)
+	
+	
+
 	menu = 0
 	pd.setCrankSoundsDisabled(true)
 	mgs = pd.sound.sampleplayer.new("sounds/MG")
-	cas = pd.sound.sampleplayer.new("sounds/Cannon")
+	cas = pd.sound.sampleplayer.new("sounds/CannonExp")
+	aps = pd.sound.sampleplayer.new("sounds/AirplaneExp")
 	click = pd.sound.sampleplayer.new("sounds/Click")
 	gunTimer = playdate.timer.new(0,0, 0, playdate.easingFunctions.linear)
+	if(pd.getReduceFlashing()) then 
+		noFlashing = true
+	end
+
+
+
+
+	ssframeTimer = playdate.timer.new(480,1000, 11000)
+    sst = gfx.imagetable.new("images/StartScreen")
+	sstanim = gfx.sprite.new(sst:getImage(1))
+	sstanim:add()
 	--testTimer = playdate.timer.new(50000,0, 50, playdate.easingFunctions.linear)
 	
 	if(pd.datastore.read(data) == nil) then
@@ -139,36 +156,36 @@ end
 
 
 function startInitialize()
-	local startImage = gfx.image.new("images/StartScreen")
+	
+	local startImage = gfx.image.new("images/SSText")
 	ss = gfx.sprite.new(startImage)
-	ss:moveTo(200,120)
+	ss:moveTo(315,120)
 	ss:add()
 	ss:setZIndex(32767)
 
 	
-
-	
-	--gfx.drawText(tostring(pd.datastore.read(data)), 0,0)
-
-
-
---data store for score
-	
-
+	--print("start///")
 end
 
---*****transition back into game is a little glitchy
+
 
 function gameOverInitialize()
+	
 	gfx.sprite:removeAll()
+	cannonMain = nil
+	gunMain = nil
+	playerMain = nil
+	pm = nil
 	--anim:removeAllAnimations()
-	pm:removeAllPlanes()
+	--pm:removeAllPlanes()
+	--pm:remove()
 	resetTimer()
 	local endImage = gfx.image.new("images/GameOver")
 	gg = gfx.sprite.new(endImage)
 	gg:moveTo(200,120)
 	gg:add()
 	gg:setZIndex(32767)
+	aps:play()
 
 
 	testTable = pd.datastore.read(data)
@@ -183,31 +200,41 @@ function gameOverInitialize()
 		
 		
 
-	
+	--print("gameover///")
 end
 
 function gameInitialize()
+	--print("game///")
+	gfx.setImageDrawMode(gfx.kDrawModeCopy)
 	e = {}
 	score = 0
+	--print(score.."score")
 
-	--cannon = cannon()
-	cannon:add()
-	cannon:initTimer()
+	
 
-    --gun = gun()
-	gun:add()
-	player:setSide(200)
-	player:setUp(360)
-	--player = player(200, 360)
+	
+	
+	
+	cannonMain = cannon()
+	--cannon:add()
+	cannonMain:initTimer()
 
-	--pm = PlaneManager(timer, player, score)
-	pm:add()
+	gunMain = gun()
+	gunMain:add()
+
+	playerMain = player(200, 360)
+	playerMain:setSide(200)
+	playerMain:setUp(360)
+
+
+	pm = PlaneManager(timer, playerMain, score)
+	--pm:add()
 	pm:removeAllPlanes()
 	pm:spawnPlane(timer, 1000)
 	
 
-	--local bkgd = gfx.image.new("images/bkgd")
-	local bkgd = nil
+	local bkgd = gfx.image.new("images/bkgd")
+	--local bkgd = nil
 	bg = gfx.sprite.new(bkgd)
 	bg.rx=1250
 	bg.ry=240
@@ -250,6 +277,7 @@ function gameInitialize()
 
 
 	resetTimer()
+	
 
 end
 
@@ -257,46 +285,51 @@ end
 
 initialize()
 
+local function fakeSoundTrack()
 
+end
 
 
 
 local function gunLocation(x,y)
 
-	crankSoundx = crankSoundx + math.abs(x)
+	
 	if(crankSoundx > 70) then 
 		click:play()
 		crankSoundx = 0
 	end
-	crankSoundy = crankSoundy + math.abs(y)
+	
 	if(crankSoundy > 210) then 
 		click:play()
 		crankSoundy = 0
 	end
 
-upcheck = player:getUp() + (y * yintensity)
-sidecheck = player:getSide() + (x * xintensity)
+	upcheck = playerMain:getUp() + (y * yintensity)
+	sidecheck = playerMain:getSide() + (x * xintensity)
 
-if(upcheck <= 360 and upcheck >= 120 and x == 0) then 
-	player:setUp(player:getUp() + (y * yintensity))
-	pm:setPlanes(player:getSide(), player:getUp())
-	cannon:setShots((x * xintensity), (y * yintensity))
-	--background not moving correctly
-	setBG(player:getSide(), player:getUp())
-end
-if (player:getSide() >= 1600) then 
-	player:setSide(0)
+	if(upcheck <= 360 and upcheck >= 120 and x == 0) then 
+		playerMain:setUp(playerMain:getUp() + (y * yintensity))
+		pm:setPlanes(playerMain:getSide(), playerMain:getUp())
+		--cannonMain:setShots((x * xintensity), (y * yintensity))
+		anim:moveAnimations((x * xintensity), (y * yintensity))
+		crankSoundy = crankSoundy + math.abs(y)
+		setBG(playerMain:getSide(), playerMain:getUp())
+	end
+	if (playerMain:getSide() >= 1600) then 
+		playerMain:setSide(0)
 	
-elseif(player:getSide() < 0) then
-	player:setSide(1599.999)
+	elseif(playerMain:getSide() < 0) then
+		playerMain:setSide(1599.999)
 	
-elseif(y == 0) then 
-	player:setSide(player:getSide() - (x * xintensity))
-	pm:setPlanes(player:getSide(), player:getUp())
-	cannon:setShots((x * xintensity), (y * yintensity))
-		--background not moving correctly
-	setBG(player:getSide(), player:getUp())
-end
+	elseif(y == 0) then 
+	
+		playerMain:setSide(playerMain:getSide() - (x * xintensity))
+		pm:setPlanes(playerMain:getSide(), playerMain:getUp())
+		--cannonMain:setShots((x * xintensity), (y * yintensity))
+		anim:moveAnimations((x * xintensity), (y * yintensity))
+		crankSoundx = crankSoundx + math.abs(x)
+		setBG(playerMain:getSide(), playerMain:getUp())
+	end
 
 end
 
@@ -312,32 +345,32 @@ end
 
 local function playerControls()
 	if(aimTypeD == false) then 
-		if((playdate.buttonIsPressed(playdate.kButtonLeft) or playdate.buttonIsPressed(playdate.kButtonRight)) and 
-		(playdate.buttonIsPressed(playdate.kButtonDown) == false and playdate.buttonIsPressed(playdate.kButtonUp) == false) and playdate.getCrankChange(change) ~= 0) then
+		if((playdate.buttonIsPressed(pd.kButtonLeft) or playdate.buttonIsPressed(pd.kButtonRight)) and 
+		(playdate.buttonIsPressed(pd.kButtonDown) == false and playdate.buttonIsPressed(pd.kButtonUp) == false) and playdate.getCrankChange(change) ~= 0) then
 		
 			gunLocation(playdate.getCrankChange(change), 0)
-		elseif ((playdate.buttonIsPressed(playdate.kButtonDown) or playdate.buttonIsPressed(playdate.kButtonUp)) and 
-		(playdate.buttonIsPressed(playdate.kButtonLeft) == false and playdate.buttonIsPressed(playdate.kButtonRight) == false) and playdate.getCrankChange(change) ~= 0) then
+		elseif ((playdate.buttonIsPressed(pd.kButtonDown) or playdate.buttonIsPressed(pd.kButtonUp)) and 
+		(playdate.buttonIsPressed(pd.kButtonLeft) == false and playdate.buttonIsPressed(pd.kButtonRight) == false) and playdate.getCrankChange(change) ~= 0) then
 		
 			gunLocation(0, playdate.getCrankChange(change))
 	
 		end 
 	else
-		if (playdate.buttonIsPressed(playdate.kButtonLeft)and 
-		(playdate.buttonIsPressed(playdate.kButtonDown) == false and playdate.buttonIsPressed(playdate.kButtonUp) == false)) then
+		if (playdate.buttonIsPressed(pd.kButtonLeft)and 
+		(playdate.buttonIsPressed(pd.kButtonDown) == false and playdate.buttonIsPressed(pd.kButtonUp) == false)) then
 			if(invertX) then gunLocation(-5, 0) else gunLocation( 5, 0)end
 			
-		elseif(playdate.buttonIsPressed(playdate.kButtonRight)and 
-		(playdate.buttonIsPressed(playdate.kButtonDown) == false and playdate.buttonIsPressed(playdate.kButtonUp) == false)) then
+		elseif(playdate.buttonIsPressed(pd.kButtonRight)and 
+		(playdate.buttonIsPressed(pd.kButtonDown) == false and playdate.buttonIsPressed(pd.kButtonUp) == false)) then
 		
 			if(invertX) then gunLocation(5, 0) else gunLocation(-5, 0)end
 	
-		elseif (playdate.buttonIsPressed(playdate.kButtonDown)and 
-		(playdate.buttonIsPressed(playdate.kButtonLeft) == false and playdate.buttonIsPressed(playdate.kButtonRight) == false)) then
+		elseif (playdate.buttonIsPressed(pd.kButtonDown)and 
+		(playdate.buttonIsPressed(pd.kButtonLeft) == false and playdate.buttonIsPressed(pd.kButtonRight) == false)) then
 			if(invertY) then gunLocation(0, -15) else gunLocation(0, 15)end
 			
-		elseif (playdate.buttonIsPressed(playdate.kButtonUp)and 
-		(playdate.buttonIsPressed(playdate.kButtonLeft) == false and playdate.buttonIsPressed(playdate.kButtonRight) == false)) then
+		elseif (playdate.buttonIsPressed(pd.kButtonUp)and 
+		(playdate.buttonIsPressed(pd.kButtonLeft) == false and playdate.buttonIsPressed(pd.kButtonRight) == false)) then
 		
 			if(invertY) then gunLocation(0, 15) else gunLocation(0, -15)end
 		end
@@ -346,7 +379,7 @@ local function playerControls()
 
 	if(playdate.buttonIsPressed(playdate.kButtonA)) then 
 		if(gunTimer.value  == 0 ) then
-		gun:shoot() 
+		gunMain:shoot() 
 		mgs:play()
 		resetGunTimer()
 		end
@@ -355,10 +388,10 @@ local function playerControls()
 	end
 
 	if(playdate.buttonIsPressed(playdate.kButtonB)) then 
-		if(cannon.flag==true)then
+		if(cannonMain.flag==true)then
 			cas:play()
 		end
-		cannon:shoot()
+		cannonMain:shoot()
 		
 		
 	end
@@ -369,17 +402,14 @@ end
 
 
 function uiSprites()
-	if(playdate.buttonIsPressed(playdate.kButtonA)) then 
 
-		--gfx.fillCircleAtPoint(364,208,13)
+	if(playdate.buttonIsPressed(playdate.kButtonA)) then 
 		mg:setVisible(true)
 	else
 		mg:setVisible(false)
 	end
 
-	if(playdate.buttonIsPressed(playdate.kButtonB) or cannon.flag == false) then 
-
-		--gfx.fillCircleAtPoint(36,208,13)
+	if(playdate.buttonIsPressed(playdate.kButtonB) or cannonMain.flag == false) then 
 		ca:setVisible(true)
 	else
 		ca:setVisible(false)
@@ -389,6 +419,7 @@ end
 
 
 function shotCollisions()
+
 	local collisions = gfx.sprite.allOverlappingSprites()
 
 	for i = 1, #collisions do
@@ -412,19 +443,19 @@ function shotCollisions()
 end
 
 function heightRet()
-cyhr = mapping(player:getUp(), 360, 120, 227, 171)
-hr:moveTo(111,cyhr)
+	cyhr = mapping(playerMain:getUp(), 360, 120, 227, 171)
+	hr:moveTo(111,cyhr)
 end
 
 
 function radar()
 	local x1 = 291
 	local y1 = 199
-	local cx = x1+30*math.cos(mapping(player:getSide()-200, 1600, 0, (2*math.pi), 0))
-	local cy = y1+30*math.sin(mapping(player:getSide()-200, 1600, 0, (2*math.pi), 0))
+	local cx = x1+30*math.cos(mapping(playerMain:getSide()-200, 1600, 0, (2*math.pi), 0))
+	local cy = y1+30*math.sin(mapping(playerMain:getSide()-200, 1600, 0, (2*math.pi), 0))
 	gfx.drawLine(x1, y1, cx, cy)
-	local cx2 = x1+30*math.cos(mapping(player:getSide()+200, 1600, 0, (2*math.pi), 0))
-	local cy2 = y1+30*math.sin(mapping(player:getSide()+200, 1600, 0, (2*math.pi), 0))
+	local cx2 = x1+30*math.cos(mapping(playerMain:getSide()+200, 1600, 0, (2*math.pi), 0))
+	local cy2 = y1+30*math.sin(mapping(playerMain:getSide()+200, 1600, 0, (2*math.pi), 0))
 	gfx.drawLine(x1, y1, cx2, cy2)
 
 end
@@ -442,16 +473,16 @@ function crankDock()
 end
 
 function cannonCheck()
-	if(cannon.cannonTimer.value == cannon.timerMax) then
-		cannon.flag = true
+	if(cannonMain.cannonTimer.value == cannonMain.timerMax) then
+		cannonMain.flag = true
 	end
-	if(cannon.cannonTimer.value > 1) then
-		cannon:clear()
+	if(cannonMain.cannonTimer.value > 1) then
+		cannonMain:clear()
 	end
 end
 
 function cannonUI()
-	gfx.fillRect(52,mapping(cannon.cannonTimer.value, 5, 0, 193, 233),5,29)
+	gfx.fillRect(52,mapping(cannonMain.cannonTimer.value, 5, 0, 193, 233),5,29)
 end
 
 function gameOverCheck()
@@ -464,28 +495,43 @@ function gameOverCheck()
 end
 
 function startUpdate()
+	playdate.timer.updateTimers()
+	fakeSoundTrack()
 
-	gfx.drawText("Ⓐ Start                    ⊙ Controls", 80, 210)
+	if((ssframeTimer.value/1000) < 11) then
+        --self.exp:getImage(math.floor(self.frameTimer.value/1000)):drawScaled(self:screenPositionX(), self:screenPositionY(),10)
+        sstanim:setImage(sst:getImage(math.floor(ssframeTimer.value/1000)))
+        sstanim:moveTo(200,120)
+       
+        
+    else
+		ssframeTimer = playdate.timer.new(480,1000, 11000)
+        
+    end
+	gfx.drawText("Ⓐ Start", 280, 170)
+	gfx.drawText("⊙ Controls", 270, 200)
 
 	if(pd.buttonJustPressed(pd.kButtonA))then
 		mgs:play()
 		gameInitialize()
 		ss:remove()
+		sstanim:remove()
 		menu = 1
 	end
 
-	--if pd.buttonJustPressed(pd.kButtonB) then
+	if pd.buttonJustPressed(pd.kButtonB) then
 		--.3 min, 15 max
-		--exp = explosion(200, 120, 32767,15)
-        --anim:addAnimationC(exp)
-	--end
-	--anim:playAnimations()
+		exp = explosion(200, 120, 32767,30)
+        anim:addAnimationC(exp)
+	end
+	anim:playAnimations()
 
 end
 
 function gameOverUpdate()
 
 	newtable = pd.datastore.read(data)
+	gfx.setImageDrawMode(gfx.kDrawModeInverted)
 	for k,v in pairs(newtable) do
 		if(k == 1) then
 			if(newHighScore == true) then
@@ -514,6 +560,7 @@ function controlsUpdate()
 
 	if(invertX) then gfx.drawRect(327, 27, 22, 25) end
 	if(invertY) then gfx.drawRect(356, 27, 22, 25) end
+
 		gfx.drawText("                           ⬅️       ➡️                   ⬆️ ⬇️", 25, 6)
 
 
@@ -546,6 +593,7 @@ function controlsUpdate()
 		storedData[4] = invertY
 		if(lastMenu == 0) then
 			ss:setVisible(true)
+			sstanim:setVisible(true)
 		elseif(lastMenu == 1) then
 			pm:setAllVisibile(true)
 			ui:setVisible(true)
@@ -553,7 +601,7 @@ function controlsUpdate()
 			if(lastMenu == 1) then
 				for key, value in pairs(playdate.timer.allTimers()) do
 					value:start()
-					print(value.value .. "value")
+					--print(value.value .. "value")
 				end
 			end
 		elseif(lastMenu == 2) then
@@ -561,7 +609,7 @@ function controlsUpdate()
 		end
 		menu = lastMenu
 		click:play()
-		--save selection
+
 		
 		option = 0
 	end
@@ -586,27 +634,32 @@ function controlsUpdate()
 
 end
 
+function drawScore()
+	gfx.drawText(string.format("%06d", score), 172, 210)
+end
+
 
 function gameUpdate()
 	playdate.timer.updateTimers()
 
-	gun:clear()
+	gunMain:clear()
 	pm:resetPlaneHMScale()
-	gameOverCheck()
+	
 	playerControls()
 	pm:incrementScale()
 	pm:planeTrigger()
 	shotCollisions()
 	cannonCheck()
 	anim:playAnimations()
+	--anim:moveAnimations()
 	uiSprites()
-	gfx.drawText(string.format("%06d", score), 172, 210)
-	
+	drawScore()
 	pm:radar()
 	radar()
 	heightRet()
 	cannonUI()
 	crankDock()
+	gameOverCheck()
     
 
 
@@ -614,10 +667,10 @@ end
 
 function pd.update()
 	gfx.sprite.update()
-	--print(testTimer.value)
-	--gfx.drawText("Test: ".. testTimer.value, 0, 0)
-	--gfx.drawText("Menu: ".. menu, 0, 30)
-	--print(menu)
+
+	--
+	
+
 	if(menu == 0) then
 		startUpdate()
 	elseif(menu == 2) then
@@ -639,13 +692,6 @@ end
 
 function pd.deviceWillLock()
 	pd.datastore.write(storedData, data)
-end
-
-function pd.gameWillPause()
-	--stop timers
-end
-function pd.gameWillResume()
-	--enable timers
 end
 
 function playdate.gameWillTerminate()

@@ -1,13 +1,14 @@
 import "CoreLibs/graphics"
+import "CoreLibs/object"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
 
 
-class('player').extends(gfx.sprite)
+class('player').extends()
 
 function player:init(sides, ups)
-    
+    player.super.init(self)
     self.up = ups
     self.side = sides 
 end

@@ -11,6 +11,11 @@ function animations:addAnimation(e)
     table.insert(ani, e)
 end
 
+function animations:addAnimationC(e)
+    table.insert(aniC, e)
+end
+
+
 function animations:playAnimations()
 
         for k, v in pairs(ani) do
@@ -26,6 +31,12 @@ function animations:playAnimations()
 
 
     
+end
+
+function animations:moveAnimations(x,y)
+    for k, v in pairs(aniC) do
+        v:screenPositionCannon(x,y)
+    end
 end
 
 function animations:removeAnimation(e)
@@ -47,9 +58,6 @@ end
 
 
 
-function animations:addAnimationC(e)
-    table.insert(aniC, e)
-end
 
 
 

@@ -8,6 +8,7 @@ scale = 2
 class('gun').extends(gfx.sprite)
 
 function gun:init()
+    gun.super.init(self)
     local image = gfx.image.new("images/shot")
     
     

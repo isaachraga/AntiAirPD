@@ -9,8 +9,9 @@ local image
 class('cannonShot').extends(gfx.sprite)
 
 function cannonShot:init(x, y)
+    cannonShot.super.init(self)
     --explosion animation
-    local image = gfx.image.new("images/shot")
+
 
      
         

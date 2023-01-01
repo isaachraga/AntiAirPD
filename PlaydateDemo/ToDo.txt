@@ -1,14 +1,10 @@
+
+-start animation not snappy enough
 -make pseudo soundtrack for start and gg menu
--gameover explosion?
--add accessability functions
--figure out a bkgd replacement, gray background
--make sure that old assets are getting removed from their lists
--radar flashing
--sfx:airplanes, airplane explosion, radar beeping
+-sfx:airplanes
 -read through sdk
 -clean and lable code
 
-
-
+-animation not working for card highlight
 
 
