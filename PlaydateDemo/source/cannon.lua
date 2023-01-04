@@ -79,6 +79,12 @@ function cannon:setShots(x,y)
     
 end
 
+function cannon:moveShots(x,y)
+    for k, v in pairs(self.shots) do
+        v:screenPositionCannon(x,y)
+    end
+end
+
 
 function cannon:clear()
     --self:setScale(0)

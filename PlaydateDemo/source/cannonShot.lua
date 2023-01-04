@@ -39,6 +39,20 @@ function cannonShot:setPos(x, y)
     self:moveTo(x, y)
 end
 
+function cannonShot:screenPositionCannon(x,y)
+    self:moveBy(x, y)
+    --if(x~= nil) then
+     --   self.rx = self.rx + x
+   -- end
+
+   -- if(y~=nil) then 
+    --    self.ry = self.ry - y
+   -- end
+    
+    
+
+end
+
 
 function cannonShot:getSide()
 return self.rx

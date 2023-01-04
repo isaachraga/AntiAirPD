@@ -11,9 +11,9 @@ secondStageTime = 550
 
 class('Plane').extends(gfx.sprite)
 
-function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm, ID)
+function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm, ID, rA)
     Plane.super.init(self)
-    expSound = aps
+    expSound = ape
     local image = gfx.image.new("images/plane")
     self.scaleSize = playdate.timer.new(planeTime-secondStageTime, 50, 500, playdate.easingFunctions.inExpo)
     self.scaleSize2 = nil
@@ -34,9 +34,22 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm, ID)
     self:setScale(self.scaleSize.value/1000)
     self:setCollideRect(0,0,self:getSize())
     self.pm = pm
+
     if(dummy ~= nil) then
         self.dummyPlane = dummy
+
+        
+    else
+
+    
+        self.rate = playdate.timer.new(planeTime, .7, 1.4, playdate.easingFunctions.inExpo)
+        self.volumeLevel = playdate.timer.new(planeTime, 0, 1, playdate.easingFunctions.inExpo)
+        self.aps = pd.sound.sampleplayer.new("sounds/AirplaneLoop")
+        
+        self.aps:play(0, self.rate.value)
+        self.aps:setVolume(0)
     end
+
 
 
     --invert h
@@ -54,7 +67,30 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm, ID)
 	self.hm:setVisible(false)
     
     self.ID = ID
+
     
+    
+end
+
+function Plane:volume()
+    if(self.aps~=nil) then 
+        --print("ID,Volume,Rate: "..self.ID.."||"..self.volumeLevel.value.."||"..self.rate.value)
+        self.aps:setVolume(self.volumeLevel.value)
+        self.aps:setRate(self.rate.value)
+    end
+end
+
+function Plane:volumePrint()
+    if(self.aps~=nil) then 
+        print("ID,Volume,Rate: "..self.ID.."||"..self.volumeLevel.value.."||"..self.rate.value)
+        
+    end
+end
+
+function Plane:stopAudio()
+    if(self.aps~=nil) then 
+      self.aps:stop()
+    end
 end
 
 function Plane:secondStageTimer()
@@ -162,12 +198,14 @@ function Plane:destroy()
         if v == self then
             
             table.remove(a, k)
-           
-            score = score + 1
+           if(gameOver==false) then 
+             score = score + 1
+        
+           end
             self.hm:setVisible(false)
 
             exp = explosion(self.rx, self.ry, self:getZIndex(), mapping(self:getScale(), .05, 2,.4,20))
-           
+            self:stopAudio()
             expSound:setVolume(mapping(self.radarDistance.value, 1000, 0, 0.15, 1))
        
             expSound:play()

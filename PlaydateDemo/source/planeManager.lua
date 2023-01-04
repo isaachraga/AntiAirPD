@@ -56,10 +56,35 @@ function PlaneManager:init(time, p, pscore)
     self:blinkTimer1Reset()
     self:blinkTimer2Reset()
     rBeep = pd.sound.sampleplayer.new("sounds/Beep")
+    rBeep:setVolume(.5)
+    
     irBeep = true
-    --ID=0
+    ID=0
     
     
+end
+
+function PlaneManager:setVolumes()
+    for key,value in pairs(a) do
+
+        value:volume()
+        
+    end
+end
+function PlaneManager:stopPlaneAudio()
+    for key,value in pairs(a) do
+
+        value:stopAudio()
+        
+    end
+end
+
+function PlaneManager:checkPlaneAudio()
+    for key,value in pairs(a) do
+
+        value:volumePrint()
+        
+    end
 end
 
 function PlaneManager:incrementScale()
@@ -89,8 +114,8 @@ function PlaneManager:spawnPlane(time, d, s)
     local ya = math.random(122, 358)
     
     if(xa > 250 and xa < 1350) then
-        --ID+=1
-        local p = Plane(x, y, d, s, a, dummy, xa, ya, score, self, ID)
+        ID+=1
+        local p = Plane(x, y, d, s, a, dummy, xa, ya, score, self, ID, rAirplane)
         p:setPosition(xa - player:getSide() + 200, ya - player:getUp() + 120)
         p:setZIndex(index)
         p:add()
@@ -100,7 +125,7 @@ function PlaneManager:spawnPlane(time, d, s)
         
     elseif(xa >=1350) then 
         --ID+=1
-        local p = Plane(x, y, d, s, a, dummy, xa-1600, ya, score, self, ID)
+        local p = Plane(x, y, d, s, a, dummy, xa-1600, ya, score, self, ID, rAirplane)
         p:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p:setZIndex(index)
         p:add()
@@ -108,7 +133,7 @@ function PlaneManager:spawnPlane(time, d, s)
         
         --print("spawn//ID:"..ID)
         
-        --ID+=1
+        ID+=1
         local p2 = Plane(x, y, d, s, a, p, xa, ya, score, self, ID)
         p2:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p2:setZIndex(index)
@@ -119,8 +144,8 @@ function PlaneManager:spawnPlane(time, d, s)
         
         
     elseif(xa <=250) then
-        --ID+=1
-        local p = Plane(x, y, d, s, a, dummy, xa+1600, ya, score,self, ID)
+        ID+=1
+        local p = Plane(x, y, d, s, a, dummy, xa+1600, ya, score,self, ID, rAirplane)
         p:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p:setZIndex(index)
         p:add()
@@ -128,7 +153,7 @@ function PlaneManager:spawnPlane(time, d, s)
       
         --print("spawn//ID:"..ID)
         
-        --ID+=1
+        ID+=1
         local p2 = Plane(x, y, d, s, a, p, xa, ya, score, self, ID)
         p2:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
         p2:setZIndex(index)
@@ -253,7 +278,7 @@ end
 function PlaneManager:gameOverCheck()
     for key,value in pairs(a) do
         if value.radarDistance.value < 5 then
-            self:removeAllPlanes()
+            --self:removeAllPlanes()
             return true
         else
             

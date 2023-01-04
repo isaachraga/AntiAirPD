@@ -1,10 +1,7 @@
-
--start animation not snappy enough
--make pseudo soundtrack for start and gg menu
--sfx:airplanes
+-make wrapping paper,make sure background is actually 1 px on off for clouds
 -read through sdk
 -clean and lable code
 
--animation not working for card highlight
+-animation not working for card highlight(test with actual PD)
 
 

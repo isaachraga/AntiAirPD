@@ -40,6 +40,7 @@ lastMenu = 0
 crankSoundx = 0
 crankSoundy = 0
 noFlashing = false
+gameOver = false
 
 local newHighScore = false
 
@@ -80,7 +81,7 @@ local menuItem, error = menu:addMenuItem("Controls", function()
 	lastMenu = menu
 	if(lastMenu == 0) then 
 		ss:setVisible(false) 
-		sstanim:setVisible(false)
+		--sstanim:setVisible(false)
 	end
 
 	if(lastMenu == 1) then
@@ -106,8 +107,9 @@ local function initialize()
 	pd.setCrankSoundsDisabled(true)
 	mgs = pd.sound.sampleplayer.new("sounds/MG")
 	cas = pd.sound.sampleplayer.new("sounds/CannonExp")
-	aps = pd.sound.sampleplayer.new("sounds/AirplaneExp")
+	ape = pd.sound.sampleplayer.new("sounds/AirplaneExp")
 	click = pd.sound.sampleplayer.new("sounds/Click")
+	--click:setVolume()
 	gunTimer = playdate.timer.new(0,0, 0, playdate.easingFunctions.linear)
 	if(pd.getReduceFlashing()) then 
 		noFlashing = true
@@ -116,10 +118,10 @@ local function initialize()
 
 
 
-	ssframeTimer = playdate.timer.new(480,1000, 11000)
-    sst = gfx.imagetable.new("images/StartScreen")
-	sstanim = gfx.sprite.new(sst:getImage(1))
-	sstanim:add()
+	--ssframeTimer = playdate.timer.new(480,1000, 11000)
+    --sst = gfx.imagetable.new("images/StartScreen")
+	--sstanim = gfx.sprite.new(sst:getImage(1))
+	--sstanim:add()
 	--testTimer = playdate.timer.new(50000,0, 50, playdate.easingFunctions.linear)
 	
 	if(pd.datastore.read(data) == nil) then
@@ -157,9 +159,9 @@ end
 
 function startInitialize()
 	
-	local startImage = gfx.image.new("images/SSText")
+	local startImage = gfx.image.new("images/StartScreen")
 	ss = gfx.sprite.new(startImage)
-	ss:moveTo(315,120)
+	ss:moveTo(200,120)
 	ss:add()
 	ss:setZIndex(32767)
 
@@ -170,6 +172,7 @@ end
 
 
 function gameOverInitialize()
+	gameOver = true
 	
 	gfx.sprite:removeAll()
 	cannonMain = nil
@@ -185,7 +188,12 @@ function gameOverInitialize()
 	gg:moveTo(200,120)
 	gg:add()
 	gg:setZIndex(32767)
-	aps:play()
+	for key,value in pairs(pd.sound.playingSources()) do
+
+        value:stop()
+        
+    end
+    cas:play()
 
 
 	testTable = pd.datastore.read(data)
@@ -204,6 +212,7 @@ function gameOverInitialize()
 end
 
 function gameInitialize()
+	gameOver = false
 	--print("game///")
 	gfx.setImageDrawMode(gfx.kDrawModeCopy)
 	e = {}
@@ -250,7 +259,7 @@ function gameInitialize()
 	ui = gfx.sprite.new(playerImage)
 	ui:moveTo(200,120)
 	ui:add()
-	ui:setZIndex(32767)
+	ui:setZIndex(32766)
 
 	local heightReticle = gfx.image.new("images/HeightReticle")
 	hr = gfx.sprite.new(heightReticle)
@@ -312,6 +321,7 @@ local function gunLocation(x,y)
 		pm:setPlanes(playerMain:getSide(), playerMain:getUp())
 		--cannonMain:setShots((x * xintensity), (y * yintensity))
 		anim:moveAnimations((x * xintensity), (y * yintensity))
+		cannonMain:moveShots((x * xintensity), (y * yintensity))
 		crankSoundy = crankSoundy + math.abs(y)
 		setBG(playerMain:getSide(), playerMain:getUp())
 	end
@@ -327,6 +337,7 @@ local function gunLocation(x,y)
 		pm:setPlanes(playerMain:getSide(), playerMain:getUp())
 		--cannonMain:setShots((x * xintensity), (y * yintensity))
 		anim:moveAnimations((x * xintensity), (y * yintensity))
+		cannonMain:moveShots((x * xintensity), (y * yintensity))
 		crankSoundx = crankSoundx + math.abs(x)
 		setBG(playerMain:getSide(), playerMain:getUp())
 	end
@@ -498,16 +509,16 @@ function startUpdate()
 	playdate.timer.updateTimers()
 	fakeSoundTrack()
 
-	if((ssframeTimer.value/1000) < 11) then
-        --self.exp:getImage(math.floor(self.frameTimer.value/1000)):drawScaled(self:screenPositionX(), self:screenPositionY(),10)
-        sstanim:setImage(sst:getImage(math.floor(ssframeTimer.value/1000)))
-        sstanim:moveTo(200,120)
+	--if((ssframeTimer.value/1000) < 11) then
+        ------self.exp:getImage(math.floor(self.frameTimer.value/1000)):drawScaled(self:screenPositionX(), self:screenPositionY(),10)
+        --sstanim:setImage(sst:getImage(math.floor(ssframeTimer.value/1000)))
+        --sstanim:moveTo(200,120)
        
         
-    else
-		ssframeTimer = playdate.timer.new(480,1000, 11000)
+   -- else
+		--ssframeTimer = playdate.timer.new(480,1000, 11000)
         
-    end
+   -- end
 	gfx.drawText("Ⓐ Start", 280, 170)
 	gfx.drawText("⊙ Controls", 270, 200)
 
@@ -515,7 +526,7 @@ function startUpdate()
 		mgs:play()
 		gameInitialize()
 		ss:remove()
-		sstanim:remove()
+		--sstanim:remove()
 		menu = 1
 	end
 
@@ -593,7 +604,7 @@ function controlsUpdate()
 		storedData[4] = invertY
 		if(lastMenu == 0) then
 			ss:setVisible(true)
-			sstanim:setVisible(true)
+			--sstanim:setVisible(true)
 		elseif(lastMenu == 1) then
 			pm:setAllVisibile(true)
 			ui:setVisible(true)
@@ -647,6 +658,7 @@ function gameUpdate()
 	
 	playerControls()
 	pm:incrementScale()
+	pm:setVolumes()
 	pm:planeTrigger()
 	shotCollisions()
 	cannonCheck()
