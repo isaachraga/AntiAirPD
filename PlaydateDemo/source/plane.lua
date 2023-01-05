@@ -43,12 +43,15 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm, ID, rA)
 
     
         self.rate = playdate.timer.new(planeTime, .7, 1.4, playdate.easingFunctions.inExpo)
-        self.volumeLevel = playdate.timer.new(planeTime, 0, 1, playdate.easingFunctions.inExpo)
+        self.volumeLevel = playdate.timer.new(planeTime, 0, 1.5, playdate.easingFunctions.inQuart)
         self.aps = pd.sound.sampleplayer.new("sounds/AirplaneLoop")
         
         self.aps:play(0, self.rate.value)
         self.aps:setVolume(0)
     end
+
+    self.left = 1
+    self.right = 1
 
 
 
@@ -74,8 +77,9 @@ end
 
 function Plane:volume()
     if(self.aps~=nil) then 
+        self:audioLocation()
         --print("ID,Volume,Rate: "..self.ID.."||"..self.volumeLevel.value.."||"..self.rate.value)
-        self.aps:setVolume(self.volumeLevel.value)
+        self.aps:setVolume(self.left,self.right)
         self.aps:setRate(self.rate.value)
     end
 end
@@ -132,6 +136,35 @@ end
 function Plane:moveByAdjustment(x,y)
     x = x * (self.distance.value * math.sqrt(2)/1000)
     self:moveBy(x,y)
+    
+end
+
+function Plane:audioLocation()
+    --clamps plane location to 1600
+    if(self.rx > 1600) then self.newNum = self.rx - 1600 else self.newNum = self.rx end
+
+    self.newNum2 = self.newNum - playerMain.side
+    --clamps difference to 1600
+    if(self.newNum2 < 0) then self.newNum2 += 1600 end
+    --self.newNum2 = self.rx - playerMain.side 
+    
+    
+    if(self.newNum2 >=0 and self.newNum2 < 400) then
+        self.right=self.volumeLevel.value
+        self.left=self.volumeLevel.value*mapping(self.newNum2, 0,400,1,0)
+    elseif(self.newNum2 >=400 and self.newNum2 < 800) then
+        self.right=self.volumeLevel.value*mapping(self.newNum2, 400,800,1,.5)
+        self.left=self.volumeLevel.value*mapping(self.newNum2, 400,800,0,.5)
+
+    elseif(self.newNum2 >=800 and self.newNum2 < 1200) then
+        self.right=self.volumeLevel.value*mapping(self.newNum2, 1200,800,0,.5)
+        self.left=self.volumeLevel.value*mapping(self.newNum2, 1200,800,1,.5)
+
+    elseif(self.newNum2 >=1200 and self.newNum2 < 1600) then
+        self.right=self.volumeLevel.value*mapping(self.newNum2, 1600,1200,1,0)
+        self.left=self.volumeLevel.value
+    end
+    print("ID,L,R,RX,NN,PX: "..self.ID.."|"..self.left.."|"..self.right.."|"..self.rx.."|"..self.newNum2.."|"..playerMain.side)
     
 end
 
@@ -206,7 +239,7 @@ function Plane:destroy()
 
             exp = explosion(self.rx, self.ry, self:getZIndex(), mapping(self:getScale(), .05, 2,.4,20))
             self:stopAudio()
-            expSound:setVolume(mapping(self.radarDistance.value, 1000, 0, 0.15, 1))
+            expSound:setVolume(mapping(self.radarDistance.value, 1000, 0, 0.01, .85))
        
             expSound:play()
             anim:addAnimation(exp)

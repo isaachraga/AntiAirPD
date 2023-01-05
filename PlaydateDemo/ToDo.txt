@@ -1,4 +1,4 @@
--make wrapping paper,make sure background is actually 1 px on off for clouds
+
 -read through sdk
 -clean and lable code
 

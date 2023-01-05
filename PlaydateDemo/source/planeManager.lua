@@ -108,7 +108,7 @@ function PlaneManager:tableCount()
 end
 
 function PlaneManager:spawnPlane(time, d, s)
-       
+       --if(ID < 1) then
     --0-1600//360-120
     local xa = math.random(0, 1599)
     local ya = math.random(122, 358)
@@ -168,6 +168,8 @@ function PlaneManager:spawnPlane(time, d, s)
     self.index = self.index -1
     --self:tableCount()
     --print("spawn//count:"..count)
+
+    --end
 end
 
 function PlaneManager:addScore(points)
