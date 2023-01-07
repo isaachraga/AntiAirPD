@@ -1,6 +1,5 @@
 -group all extra files
 -get naming conventions solidified
--
 -read through sdk
 -clean and lable code
 

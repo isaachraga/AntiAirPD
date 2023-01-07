@@ -85,6 +85,7 @@ local menuItem, error = menu:addMenuItem("Controls", function()
 	end
 
 	if(lastMenu == 1) then
+	
 		for key, value in pairs(playdate.timer.allTimers()) do
 			value:pause()
 		end
@@ -104,7 +105,9 @@ local function initialize()
 	
 
 	menu = 0
+	--menu = 2
 	pd.setCrankSoundsDisabled(true)
+	text = gfx.font.new("font/Asheville-Sans-14-Bold")
 	mgs = pd.sound.sampleplayer.new("sounds/MG")
 	cas = pd.sound.sampleplayer.new("sounds/CannonExp")
 	cas:setVolume(.8)
@@ -152,7 +155,7 @@ local function initialize()
 	
 
 	startInitialize()
-
+	--gameOverInitialize()
 end
 
 
@@ -520,15 +523,19 @@ function startUpdate()
 		--ssframeTimer = playdate.timer.new(480,1000, 11000)
         
    -- end
-	gfx.drawText("Ⓐ Start", 280, 170)
-	gfx.drawText("⊙ Controls", 270, 200)
+   text:drawText("   Start", 293, 170)
+   gfx.drawText("Ⓐ", 280, 170)
+   text:drawText("   Controls", 283, 200)
+   gfx.drawText("⊙", 270, 200)
 
 	if(pd.buttonJustPressed(pd.kButtonA))then
 		mgs:play()
 		gameInitialize()
 		ss:remove()
-		--sstanim:remove()
+		
 		menu = 1
+		--gameOverInitialize()
+		--menu = 2
 	end
 
 	if pd.buttonJustPressed(pd.kButtonB) then
@@ -547,16 +554,18 @@ function gameOverUpdate()
 	for k,v in pairs(newtable) do
 		if(k == 1) then
 			if(newHighScore == true) then
-				gfx.drawText("!!!  New High Score: " .. tostring(v).."  !!!", 120,120)
+				text:drawText("!!!  New High Score: " .. tostring(v).."  !!!", 120,120)
 			else
-				gfx.drawText("High Score: " .. tostring(v), 150,120)
+				text:drawText("High Score: " .. tostring(v), 150,120)
 			end
 		end
 	end
 
-	gfx.drawText("Your Score: " .. tostring(score), 150,147)
+	text:drawText("Your Score: " .. tostring(score), 150,147)
 
-	gfx.drawText("Ⓐ Restart                 ⊙ Controls", 80, 210)
+	text:drawText("       Restart                             Controls", 68, 210)
+	gfx.drawText("Ⓐ", 68, 210)
+	gfx.drawText("⊙",244, 210)
 
 		if(pd.buttonJustPressed(pd.kButtonA))then
 			mgs:play()
@@ -570,33 +579,54 @@ end
 
 function controlsUpdate()
 
-	if(invertX) then gfx.drawRect(327, 27, 22, 25) end
-	if(invertY) then gfx.drawRect(356, 27, 22, 25) end
+	if(invertX) then gfx.drawRect(324, 27, 22, 25) end
+	if(invertY) then gfx.drawRect(353, 27, 22, 25) end
 
-		gfx.drawText("                           ⬅️       ➡️                   ⬆️ ⬇️", 25, 6)
-
+	gfx.drawText("⬅️", 143, 6)
+	gfx.drawText("➡️", 212, 6)
+	gfx.drawText("⬆️", 326, 6)
+	gfx.drawText("⬇️", 354, 6)
 
 	if(lastMenu == 1) then
 		pm:setAllVisibile(false)
 		ui:setVisible(false)
 		hr:setVisible(false)
+		bg:setVisible(false)
 	end 
-		gfx.drawText("Aim Control:      ✛+🎣    ✛       Invert:   X    Y  ", 25, 32)
+	text:drawText("Aim Control:", 25, 32)
+	text:drawText("+", 147, 32)
+	text:drawText("Invert:   X     Y  ", 272, 32)
+	gfx.drawText("✛   🎣", 125, 32)
+	gfx.drawText("✛", 210, 32)
 		
 	if(option == 0 ) then 
-		gfx.drawRect(140, 29, 58, 27)
-		gfx.drawText("(⬆️ OR ⬇️) + 🎣 ================= Veritcal Aim", 25, 62)
-		gfx.drawText("(⬅️ OR ➡️) + 🎣 =============== Horizontal Aim", 25, 89)
+		gfx.drawRect(120, 29, 63, 27)
+		text:drawText("(       OR       ) +      ================= Veritcal Aim", 25, 62)
+		gfx.drawText("⬆️", 35, 62)
+		gfx.drawText("➡️", 85, 62)
+		gfx.drawText("🎣", 128, 62)
+		text:drawText("(       OR       ) +      =============== Horizontal Aim", 25, 89)
+		gfx.drawText("⬆️", 35, 89)
+		gfx.drawText("➡️", 85, 89)
+		gfx.drawText("🎣", 128, 89)
 	else
-		gfx.drawRect(212, 29, 26, 27)
-		gfx.drawText("(⬆️ OR ⬇️) ====================== Veritcal Aim", 25, 62)
-		gfx.drawText("(⬅️ OR ➡️) ==================== Horizontal Aim", 25, 89)
+		gfx.drawRect(206, 29, 27, 27)
+		text:drawText("(       OR       ) ===================== Veritcal Aim", 25, 62)
+		gfx.drawText("⬆️", 35, 62)
+		gfx.drawText("➡️", 85, 62)
+	
+		text:drawText("(       OR       ) =================== Horizontal Aim", 25, 89)
+		gfx.drawText("⬆️", 35, 89)
+		gfx.drawText("➡️", 85, 89)
 	end
-		gfx.drawText("Ⓐ ========================= Fire Machine Gun", 25, 116)
-		gfx.drawText("Ⓑ ============================== Fire Cannon", 25, 143)
+	text:drawText("      ========================= Fire Machine Gun", 25, 116)
+	gfx.drawText("Ⓐ", 25, 116)
+	text:drawText("      ============================== Fire Cannon", 25, 143)
+	gfx.drawText("Ⓑ", 25, 143)
 	
 
-	gfx.drawText("Press Ⓐ to Confirm", 140, 210)
+	text:drawText("Press       to Confirm", 140, 210)
+	gfx.drawText("         Ⓐ", 144, 210)
 
 	if(pd.buttonJustPressed(pd.kButtonA))then
 		if option == 0 then aimTypeD = false else aimTypeD = true end
@@ -609,6 +639,7 @@ function controlsUpdate()
 		elseif(lastMenu == 1) then
 			pm:setAllVisibile(true)
 			ui:setVisible(true)
+			bg:setVisible(true)
 			hr:setVisible(true)
 			if(lastMenu == 1) then
 				for key, value in pairs(playdate.timer.allTimers()) do
@@ -647,7 +678,7 @@ function controlsUpdate()
 end
 
 function drawScore()
-	gfx.drawText(string.format("%06d", score), 172, 210)
+	text:drawText(string.format("%06d", score), 171, 210)
 end
 
 
