@@ -7,30 +7,15 @@ class('animations').extends(gfx.sprite)
 local ani = {}
 local aniC = {}
 
-function animations:addAnimation(e)
-    table.insert(ani, e)
-end
-
-function animations:addAnimationC(e)
-    table.insert(aniC, e)
-end
-
-
 function animations:playAnimations()
 
-        for k, v in pairs(ani) do
-            v:explode()
-        end
-    
+    for k, v in pairs(ani) do
+        v:explode()
+    end
 
- 
-        for k2, v2 in pairs(aniC) do
-            v2:explodeCannon()
-        end
-        
-
-
-    
+    for k2, v2 in pairs(aniC) do
+        v2:explodeCannon()
+    end
 end
 
 function animations:moveAnimations(x,y)
@@ -39,20 +24,29 @@ function animations:moveAnimations(x,y)
     end
 end
 
-function animations:removeAnimation(e)
+function addAnimation(e)
+    table.insert(ani, e)
+end
+
+
+function addAnimationC(e)
+    table.insert(aniC, e)
+end
+
+function removeAnim(e)
     for k, v in pairs(ani) do
         if(v == e) then
             table.remove(ani, k)
+            return
         end 
     end
 
-    for k, v in pairs(aniC) do
-        if(v == e) then
-            table.remove(aniC, k)
-        end 
+    for k2, v2 in pairs(aniC) do
+        if(v2 == e) then
+            table.remove(aniC, k2)
+            return
+        end
     end
-
-    
 end
 
 
@@ -61,11 +55,5 @@ end
 
 
 
-function animations:removeAllAnimations()
-    for k, v in pairs(ani) do
-            table.remove(ani, k)
-    end
-    for k, v in pairs(aniC) do
-        table.remove(aniC, k)
-end
-end
+
+

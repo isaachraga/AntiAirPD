@@ -1,18 +1,18 @@
-
 import "CoreLibs/timer"
 import "explosion"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
-planeTime = 30000
-secondStageTime = 550
+local planeTime = 30000
+local secondStageTime = 550
 
 
 
 
 class('Plane').extends(gfx.sprite)
-
-function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm, ID, rA)
+--plane scale max 10 min .05
+function Plane:init(a, dummy, xa, ya, ID)
     Plane.super.init(self)
+
     expSound = ape
     local image = gfx.image.new("images/plane")
     self.scaleSize = playdate.timer.new(planeTime-secondStageTime, 50, 500, playdate.easingFunctions.inExpo)
@@ -21,73 +21,43 @@ function Plane:init(x, y, d, s, a, dummy, xa, ya, pscore, pm, ID, rA)
     self.radarDistance = playdate.timer.new(planeTime, 1000, 0, playdate.easingFunctions.linear)
     self.a = a
     self:setImageDrawMode("copy")
-    self.score = pscore
-   
+    
     self.health = 100
 
-    --self:moveTo(x,y)
-    --self:moveTo(200, 120)
-    --self.rx = 200
     self.rx = xa
     self.ry = ya
     self:setImage(image)
     self:setScale(self.scaleSize.value/1000)
     self:setCollideRect(0,0,self:getSize())
-    self.pm = pm
-
-    if(dummy ~= nil) then
-        self.dummyPlane = dummy
-
-        
-    else
 
     
-        self.rate = playdate.timer.new(planeTime, .7, 1.4, playdate.easingFunctions.inExpo)
-        self.volumeLevel = playdate.timer.new(planeTime, 0, 1.5, playdate.easingFunctions.inQuart)
-        self.aps = pd.sound.sampleplayer.new("sounds/AirplaneLoop")
-        
-        self.aps:play(0, self.rate.value)
-        self.aps:setVolume(0)
+
+    if(dummy ~= nil) then
+        self.dummyPlane = dummy 
     end
 
+    self.rate = playdate.timer.new(planeTime, .7, 1.4, playdate.easingFunctions.inExpo)
+    self.volumeLevel = playdate.timer.new(planeTime, 0, 1.5, playdate.easingFunctions.inQuart)
+    self.aps = pd.sound.sampleplayer.new("sounds/AirplaneLoop")
+    self.aps:play(0, self.rate.value)
+    self.aps:setVolume(0)
     self.left = 1
     self.right = 1
 
-
-
-    --invert h
     local hitmarker = gfx.image.new("images/HitMarker")
-   
 	self.hm = gfx.sprite.new(hitmarker)
     self.hm:setImageDrawMode(gfx.kDrawModeNXOR)
-    
-    
-    
-	
-	--playerSprite:setScale(planeScale)
 	self.hm:add()
-	--self.hm.setZIndex=32767
 	self.hm:setVisible(false)
-    
-    self.ID = ID
 
-    
-    
+    self.ID = ID
 end
 
 function Plane:volume()
     if(self.aps~=nil) then 
         self:audioLocation()
-        --print("ID,Volume,Rate: "..self.ID.."||"..self.volumeLevel.value.."||"..self.rate.value)
         self.aps:setVolume(self.left,self.right)
         self.aps:setRate(self.rate.value)
-    end
-end
-
-function Plane:volumePrint()
-    if(self.aps~=nil) then 
-        print("ID,Volume,Rate: "..self.ID.."||"..self.volumeLevel.value.."||"..self.rate.value)
-        
     end
 end
 
@@ -96,6 +66,8 @@ function Plane:stopAudio()
       self.aps:stop()
     end
 end
+
+
 
 function Plane:secondStageTimer()
 
@@ -119,25 +91,30 @@ end
 
 
 
-function Plane:incrementScale()
+function Plane:incrementScale(x,y,x2,y2)
+    local dummySend = 0
+   
     if(self.scaleSize.value/1000 <.5) then
         self:setScale(self.scaleSize.value/1000)
+        self:setCollideRect(x,y,x2,y2)
+        dummySend = self.scaleSize.value/1000
+        
     elseif(self.scaleSize.value/1000 >=.5) then
         if(self.scaleSize2 == nil) then 
              self:secondStageTimer()
         end
        self:setScale(self.scaleSize2.value/1000)
-   end
+       dummySend = self.scaleSize.value/1000
+    end
+
+    if(self.dummyPlane ~= nil) then
+        --print("ScalePPP"..self.scaleSize.value.."||"..dummySend)
+        self.dummyPlane:incrementScale(dummySend)
+        self.dummyPlane:setCollideRect(x,y,x2,y2)
+    end
     
 end
 
-
-
-function Plane:moveByAdjustment(x,y)
-    x = x * (self.distance.value * math.sqrt(2)/1000)
-    self:moveBy(x,y)
-    
-end
 
 function Plane:audioLocation()
     --clamps plane location to 1600
@@ -146,7 +123,6 @@ function Plane:audioLocation()
     self.newNum2 = self.newNum - playerMain.side
     --clamps difference to 1600
     if(self.newNum2 < 0) then self.newNum2 += 1600 end
-    --self.newNum2 = self.rx - playerMain.side 
     
     
     if(self.newNum2 >=0 and self.newNum2 < 400) then
@@ -164,13 +140,12 @@ function Plane:audioLocation()
         self.right=self.volumeLevel.value*mapping(self.newNum2, 1600,1200,1,0)
         self.left=self.volumeLevel.value
     end
-    print("ID,L,R,RX,NN,PX: "..self.ID.."|"..self.left.."|"..self.right.."|"..self.rx.."|"..self.newNum2.."|"..playerMain.side)
-    
 end
 
 function Plane:setPosition(x, y)
     self:moveTo(x,y)
     self.hm:moveTo(x,y)
+    
     
 end
 
@@ -205,50 +180,25 @@ end
 function Plane:destroy()
     
     if(self.dummyPlane ~= nil) then 
-        for k, v in pairs(a) do
-            if v == self.dummyPlane then
-                
-                table.remove(a, k)
-                
-                
-
-                self.hm:setVisible(false)
-
-                exp = explosion(self.rx, self.ry, self:getZIndex(), mapping(self:getScale(), .05, 2,.4,20))
-           
-                 
        
-                expSound:play()
-                anim:addAnimation(exp)
-                --v:tableCount()
-                --print("destroy//count:"..count.."//ID:"..v.ID)
-                v:remove()
-                
-            end
-        end
+            self.dummyPlane:destroy()
     end
+
     for k, v in pairs(a) do
         if v == self then
             
             table.remove(a, k)
-           if(gameOver==false) then 
-             score = score + 1
-        
-           end
+            if(getGameOver()==false) then 
+                score = score + 1
+            end
             self.hm:setVisible(false)
 
             exp = explosion(self.rx, self.ry, self:getZIndex(), mapping(self:getScale(), .05, 2,.4,20))
             self:stopAudio()
             expSound:setVolume(mapping(self.radarDistance.value, 1000, 0, 0.01, .85))
-       
             expSound:play()
-            anim:addAnimation(exp)
-            --self:tableCount()
-            --print("destroy//count:"..count.."//ID:"..v.ID)
+            addAnimation(exp)
             self:remove()
-            --self:destroy()
         end
     end
-    
-    
 end

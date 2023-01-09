@@ -1,16 +1,14 @@
 import "CoreLibs/graphics"
 import "CoreLibs/object"
-local pd <const> = playdate
-local gfx <const> = pd.graphics
 
 
 
 class('player').extends()
 
-function player:init(sides, ups)
+function player:init()
     player.super.init(self)
-    self.up = ups
-    self.side = sides 
+    self.side = 200
+    self.up = 360
 end
 
 function player:setUp(u)

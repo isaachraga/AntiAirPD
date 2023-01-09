@@ -1,7 +1,7 @@
 import "CoreLibs/graphics"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
-scale = 2
+local scale = 2
 
 
 
@@ -9,39 +9,21 @@ class('gun').extends(gfx.sprite)
 
 function gun:init()
     gun.super.init(self)
-    local image = gfx.image.new("images/shot")
-    
-    
-    
-    self:setImage(image)
-    
     self:setZIndex(32767)
-    
-   
 
-
-    
-
-    
-    
 end
 
 function gun:shoot()
-    self:setScale(scale)
-    x = math.random(20)
-    y = math.random(20)
-    self:moveTo(188+x, 110+y)
-    self:setCollideRect(0,0,7,7)
-    
-    
+    x = math.random(20)+188
+    y = math.random(20)+110
+    gfx.fillRect(x,y,scale,scale)
 
-  
+    self:setCollideRect(x,y,7,7)
 end
 
 
 
 function gun:clear()
-    self:setScale(0)
     self:clearCollideRect()
 end
 

@@ -5,8 +5,7 @@ import "CoreLibs/object"
 
 local pd <const> = playdate
 local gfx <const> = pd.graphics
-cscale = 20
-local image
+
 
 
 
@@ -15,10 +14,9 @@ class('cannon').extends()
 
 function cannon:init()
     cannon.super.init(self)
-
     self.flag = true
-    self.timerMax = 5
-    self:initTimer()
+    self.timerMax = 15
+    self.cannonTimer = playdate.timer.new(0,self.timerMax, self.timerMax)
 
     self.shots = {}
     for i = 1,7 do
@@ -34,9 +32,7 @@ function cannon:init()
   
 end
 
-function cannon:initTimer()
-    self.cannonTimer = playdate.timer.new(0,self.timerMax, self.timerMax)
-end
+
 
 function cannon:resetTimer()
     self.cannonTimer = playdate.timer.new(self.timerMax*1000,0, self.timerMax)
@@ -59,7 +55,7 @@ function cannon:shoot()
             
             exp = explosion(x, y, 32764,sca)
             
-            anim:addAnimationC(exp)
+            addAnimationC(exp)
         end
         self.flag = false
         self:resetTimer()
@@ -70,11 +66,11 @@ end
 function cannon:setShots(x,y)
  
 
-    for key,value in pairs(self.shots) do
-        local xd = value:getSide() + x
-        local yd = value:getUp()- y
+    for k,v in pairs(self.shots) do
+        local xd = v:getSide() + x
+        local yd = v:getUp()- y
 
-        value:setPos(xd,yd)
+        v:setPos(xd,yd)
     end
     
 end
@@ -87,9 +83,8 @@ end
 
 
 function cannon:clear()
-    --self:setScale(0)
-    for key,value in pairs(self.shots) do
-        value:clearCollideRect()
+    for k,v in pairs(self.shots) do
+        v:clearCollideRect()
     end
     
 end
