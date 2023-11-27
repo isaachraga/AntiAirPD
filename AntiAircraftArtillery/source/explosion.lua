@@ -22,6 +22,8 @@ function explosion:init(x, y, zindex, scale)
     self:explode()
 end
 
+--PLANE
+
 function explosion:explode()
     if(math.floor(self.frameTimer.value/1000) < 11) then
         self:setImage(self.exp:getImage(math.floor(self.frameTimer.value/1000)))
@@ -42,6 +44,20 @@ function explosion:screenPositionY()
     return self.yd
 end
 
+--CANNON
+
+function explosion:explodeCannon()
+
+    if(math.floor(self.frameTimer.value/1000) < 11) then
+        self:setImage(self.exp:getImage(math.floor(self.frameTimer.value/1000)))
+       self:moveTo(self:screenPositionCannon())
+    else
+        removeAnim(self)
+
+        self:remove()
+    end
+end
+
 function explosion:screenPositionCannon(x,y)
     if(x~= nil) then
         self.dx = self.dx + x
@@ -57,17 +73,7 @@ end
 
 
 
-function explosion:explodeCannon()
 
-    if(math.floor(self.frameTimer.value/1000) < 11) then
-        self:setImage(self.exp:getImage(math.floor(self.frameTimer.value/1000)))
-       self:moveTo(self:screenPositionCannon())
-    else
-        removeAnim(self)
-
-        self:remove()
-    end
-end
 
 
 

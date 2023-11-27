@@ -1,7 +1,0 @@
-name=Anti Air Artillery PD
-author=Isaac Hraga
-description=Defend yourself from the airplane attack for as long as you can!
-bundleID=com.organization.package
-imagePath=images/
-version=0.0.1
-launchSoundPath=sounds/MG

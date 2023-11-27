@@ -8,7 +8,6 @@ class('cannonShot').extends(gfx.sprite)
 
 function cannonShot:init(x, y)
     cannonShot.super.init(self)
-  
     self.rx = x
     self.ry = y
     self:moveTo(x, y)
