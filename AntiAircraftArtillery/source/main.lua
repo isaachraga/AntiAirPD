@@ -19,8 +19,6 @@ import "imageTest"
 --remove fps timer
 --some dummy planes are the wrong size
 --look for pausing bugs
---add d pad sensitivity 
---make sure variables are all scoped correcly and labeled inteligently
 --clean code
 --label code
 
@@ -45,6 +43,7 @@ local beepSend <const> = pd.sound.sampleplayer.new("sounds/Beep")
 
 local bkgd <const> = gfx.image.new("images/bkgd")
 local bkgd2 <const> = bkgd:blurredImage(15, 5, gfx.image.kDitherTypeFloydSteinberg, true)
+local bg = gfx.sprite.new(bkgd2)
 local playerImage <const> = gfx.image.new("images/ui")
 local ui <const> = gfx.sprite.new(playerImage)
 local heightReticle <const> = gfx.image.new("images/HeightReticle")
@@ -56,6 +55,7 @@ local ca <const> = gfx.sprite.new(caA)
 local endImage <const> = gfx.image.new("images/GameOver")
 local image <const> = gfx.image.new("images/plane")
 local startImage <const> = gfx.image.new("images/StartScreen")
+local ss = gfx.sprite.new(startImage)
 
 
 --#DATASTORE VARS//
@@ -76,14 +76,28 @@ local invertY = false
 local crankSoundx = 0
 local crankSoundy = 0
 local crankSensitivity = 1
+local dPadSensitivity = 1
 local crankLowBound = .1
 local crankHighBound = 6
+local dPadLowBound = .1
+local dPadHighBound = 4
 local gameOver = false
 local xintensity = 1
 local yintensity = .1
 local shotDamage = 13
 local rof = 29
+local gunTimer = nil
 local scale = 0.05
+local loadingFlag = false
+local score = 0
+
+
+local animMain = animations()
+local cannonMain = cannon()
+local playerMain = player()
+local pmMain = PlaneManager(playerMain, imageTableTest,beepSend, ape, aps, hitmarker)
+local gunMain = gun()
+
 local text <const> = gfx.font.new("font/Asheville-Sans-14-Bold")
 
 local planeLimitMarker = 5;
@@ -93,7 +107,7 @@ local  imageTableTest <const> = {}
 
 
 --override for timer, allows for pausing
-function playdate.timer:start()
+function pd.timer:start()
 	self._lastTime = nil
 	self.paused = false
 end
@@ -118,7 +132,7 @@ local menuItem, error = menu:addMenuItem("Controls", function()
 		bg:setVisible(false)
 		mg:setVisible(false)
 		ca:setVisible(false)
-		for k, v in pairs(playdate.timer.allTimers()) do
+		for k, v in pairs(pd.timer.allTimers()) do
 			v:pause()
 		end
 	end
@@ -138,7 +152,7 @@ local function initialize()
 	gfx.sprite.update()
 	--imageCount = pd.timer.new(134, 0, 1, playdate.easingFunctions.linear)
 	--imageCount = pd.timer.new(67, 0, 1, playdate.easingFunctions.linear)
-    loadingFlag = false
+    --loadingFlag = false
 	
 	 
 	--[[scale = .05
@@ -179,7 +193,7 @@ local function initialize()
 	--
 	--
 
-	gunTimer = playdate.timer.new(0,0, 0, playdate.easingFunctions.linear)
+	--gunTimer = playdate.timer.new(0,0, 0, playdate.easingFunctions.linear)
 	
 	--initailizes datastore or reads previous data
 	if(pd.datastore.read(data) == nil) then
@@ -188,6 +202,7 @@ local function initialize()
 		storedData[3] = false
 		storedData[4] = false
 		storedData[5] = false
+		storedData[6] = false
 		pd.datastore.write(storedData, data)
 	else
 		testTable = pd.datastore.read(data)
@@ -200,6 +215,8 @@ local function initialize()
 				invertY = testTable[k]
 			elseif(k==5)then
 				crankSensitivity = testTable[k]
+			elseif(k==6)then
+				dPadSensitivity = testTable[k]
 			end
 			storedData[k] = testTable[k]
 		end
@@ -215,21 +232,33 @@ end
 
 
 function startInitialize()
-	
-	ss = gfx.sprite.new(startImage)
 	ss:moveTo(200,120)
 	ss:add()
 	ss:setZIndex(32767)
 end
 
 function scorePoint()
-	score = score + 1
+	score += 1
 
 	if score == planeLimitMarker then
-		planeLimitMarker +=planeLimitMarker
+		planeLimitMarker += planeLimitMarker
 		pmMain:increasePlaneLimit()
 	end
 end
+
+function getSide()
+	return playerMain:getSide()
+end
+
+function getUp()
+	return playerMain:getUp()
+end
+
+--controls the rate of fire
+local function resetGunTimer()
+	gunTimer = pd.timer.new(rof,10, 0, pd.easingFunctions.linear)
+end
+
 
 
 
@@ -242,13 +271,13 @@ function gameInitialize()
 	animMain = animations()
 	cannonMain = cannon()
 	playerMain = player()
-	pmMain = nil
+	--pmMain = nil
 	pmMain = PlaneManager(playerMain, imageTableTest,beepSend, ape, aps, hitmarker)
 	gunMain = gun()
 	gunMain:add()
 
 	
-	bg = gfx.sprite.new(bkgd2)
+	
 	bg.rx=1250
 	bg.ry=240
 	bg:moveTo(800,0)
@@ -280,6 +309,7 @@ function gameInitialize()
 
 	pmMain:spawnPlane()
 	--print("Game Init")
+	resetGunTimer()
 
 	imageFrameTimer = pd.frameTimer.new(1)
 	imageFrameTimer.timerEndedCallback = function(timer)
@@ -319,7 +349,7 @@ function gameOverInitialize()
 		newHighScore = true
 				
 	end
-	print("Gameover Init")
+
 end
 
 initialize()
@@ -332,10 +362,8 @@ function getGameOver()
 	return gameOver
 end
 
---controls the rate of fire
-local function resetGunTimer()
-	gunTimer = playdate.timer.new(rof,10, 0, playdate.easingFunctions.linear)
-end
+
+
 
 local function gunLocation(x,y)
 --controls frequency of the crank click
@@ -350,8 +378,8 @@ local function gunLocation(x,y)
 	end
 
 	--moves assets according to where the gun is pointing
-	upcheck = playerMain:getUp() + (y * yintensity)
-	sidecheck = playerMain:getSide() + (x * xintensity)
+	local upcheck = playerMain:getUp() + (y * yintensity)
+	--local sidecheck = playerMain:getSide() + (x * xintensity)
 
 	if(upcheck <= 360 and upcheck >= 120 and x == 0) then 
 		playerMain:setUp(playerMain:getUp() + (y * yintensity))
@@ -403,21 +431,21 @@ local function playerControls()
 	else
 		if (pd.buttonIsPressed(pd.kButtonLeft)and 
 		(pd.buttonIsPressed(pd.kButtonDown) == false and pd.buttonIsPressed(pd.kButtonUp) == false)) then
-			if(invertX) then gunLocation(-5, 0) else gunLocation( 5, 0)end
+			if(invertX) then gunLocation(-5*dPadSensitivity, 0) else gunLocation( 5*dPadSensitivity, 0)end
 			
 		elseif(pd.buttonIsPressed(pd.kButtonRight)and 
 		(pd.buttonIsPressed(pd.kButtonDown) == false and pd.buttonIsPressed(pd.kButtonUp) == false)) then
 		
-			if(invertX) then gunLocation(5, 0) else gunLocation(-5, 0)end
+			if(invertX) then gunLocation(5*dPadSensitivity, 0) else gunLocation(-5*dPadSensitivity, 0)end
 	
 		elseif (pd.buttonIsPressed(pd.kButtonDown)and 
 		(pd.buttonIsPressed(pd.kButtonLeft) == false and pd.buttonIsPressed(pd.kButtonRight) == false)) then
-			if(invertY) then gunLocation(0, -15) else gunLocation(0, 15)end
+			if(invertY) then gunLocation(0, -15*dPadSensitivity) else gunLocation(0, 15*dPadSensitivity)end
 			
 		elseif (pd.buttonIsPressed(pd.kButtonUp)and 
 		(pd.buttonIsPressed(pd.kButtonLeft) == false and pd.buttonIsPressed(pd.kButtonRight) == false)) then
 		
-			if(invertY) then gunLocation(0, 15) else gunLocation(0, -15)end
+			if(invertY) then gunLocation(0, 15*dPadSensitivity) else gunLocation(0, -15*dPadSensitivity)end
 		end
 	
 	end
@@ -449,13 +477,13 @@ end
 
 function uiSprites()
 
-	if(playdate.buttonIsPressed(playdate.kButtonA)) then 
+	if(pd.buttonIsPressed(pd.kButtonA)) then 
 		mg:setVisible(true)
 	else
 		mg:setVisible(false)
 	end
 
-	if(playdate.buttonIsPressed(playdate.kButtonB) or cannonMain.flag == false) then 
+	if(pd.buttonIsPressed(pd.kButtonB) or cannonMain.flag == false) then 
 		ca:setVisible(true)
 	else
 		ca:setVisible(false)
@@ -514,14 +542,14 @@ end
 
 --handles all mapping functions(first lower bound, first uppper bound, last (etc.))
 function mapping(input, flb, fub, llb, lub)
-    output = (input-flb)/(fub-flb) * (lub-llb) + llb
+    local output = (input-flb)/(fub-flb) * (lub-llb) + llb
     return output
 end
 
 function crankDockCheck()
-	if(playdate.isCrankDocked() and aimTypeD == false) then
-		playdate.ui.crankIndicator:start()
-		playdate.ui.crankIndicator:update()
+	if(pd.isCrankDocked() and aimTypeD == false) then
+		pd.ui.crankIndicator:start()
+		pd.ui.crankIndicator:update()
 	end
 end
 
@@ -553,7 +581,7 @@ end
 --#UPDATE FUNCTIONS//
 
 function startUpdate()
-	playdate.timer.updateTimers()
+	pd.timer.updateTimers()
 	
    text:drawText("   Start", 293, 170)
    gfx.drawText("Ⓐ", 280, 170)
@@ -574,7 +602,7 @@ function startUpdate()
 end
 
 function gameUpdate()
-	playdate.timer.updateTimers()
+	pd.timer.updateTimers()
 
 	gunMain:clear()
 	pmMain:resetPlaneHMScale()
@@ -669,12 +697,18 @@ function controlsUpdate()
 	text:drawText("      ============================== Fire Cannon", 25, 143)
 	gfx.drawText("Ⓑ", 25, 143)
 
-	gfx.drawText("🎣", 25, 169)
+	if option == 0 then
+		gfx.drawText("🎣", 25, 169)
+		gfx.fillRect(mapping(crankSensitivity, crankLowBound, crankHighBound, 138, 310), 177, 4, 16)
+	else
+		gfx.drawText("✛", 25, 169)
+		gfx.fillRect(mapping(dPadSensitivity, dPadLowBound, dPadHighBound, 138, 310), 177, 4, 16)
+	end
 	text:drawText("Sensitivity: ", 50, 174)
 	text:drawText("(Use       )", 318, 174)
 	gfx.drawText("🎣", 358, 169)
 	gfx.fillRect(138, 183, 172, 4)
-	gfx.fillRect(mapping(crankSensitivity, crankLowBound, crankHighBound, 138, 310), 177, 4, 16)
+	
 
 	
 
@@ -687,6 +721,7 @@ function controlsUpdate()
 		storedData[3] = invertX
 		storedData[4] = invertY
 		storedData[5] = crankSensitivity
+		storedData[6] = dPadSensitivity
 		if(lastMenu == 0) then
 			ss:setVisible(true)
 
@@ -702,7 +737,7 @@ function controlsUpdate()
 				ca:setVisible(false)
 			end
 			if(lastMenu == 1) then
-				for k, v in pairs(playdate.timer.allTimers()) do
+				for k, v in pairs(pd.timer.allTimers()) do
 					v:start()
 				end
 			end
@@ -732,21 +767,38 @@ function controlsUpdate()
 		click:play()
 	end
 	if(pd.getCrankChange(change) ~= 0) then
-		print(pd.getCrankChange(change))
-		print("CrankSense: "..crankSensitivity)
 		if pd.getCrankChange(change) < 0 then
-			if crankSensitivity > crankLowBound then
-				crankSensitivity -= .05
+			if option == 0 then
+				if crankSensitivity > crankLowBound then
+					crankSensitivity -= .05
+				else
+					crankSensitivity = crankLowBound
+				end
 			else
-				crankSensitivity = crankLowBound
+				if dPadSensitivity > dPadLowBound then
+					dPadSensitivity -= .05
+				else
+					dPadSensitivity = dPadLowBound
+				end
 			end
 			
+			
 		else
-			if crankSensitivity < crankHighBound then
-				crankSensitivity += .05
+			if option == 0 then
+				if crankSensitivity < crankHighBound then
+					crankSensitivity += .05
+				else
+					crankSensitivity = crankHighBound
+				end
 			else
-				crankSensitivity = crankHighBound
+				if dPadSensitivity < dPadHighBound then
+					dPadSensitivity += .05
+				else
+					dPadSensitivity = dPadHighBound
+				end
+
 			end
+			
 		end
 
 		
@@ -754,20 +806,7 @@ function controlsUpdate()
 
 end
 
---[[function resetImageCount()
-    --self.imageCount = pd.timer.new(134, 0, 1, playdate.easingFunctions.linear)
-    
-    --imageCountTimer = pd.timer.new(134, 0, 1, playdate.easingFunctions.linear)
-end]]--
 
---[[function resetImageCount()
-	if(testnum < 195) then
-		imageCount = pd.timer.new(193, 0, 1, playdate.easingFunctions.linear)
-	else
-		imageCount = pd.timer.new(33, 0, 1, playdate.easingFunctions.linear)
-	end
-    
-end]]--
 
 function resetFrameCount()
 	--[[if offsetNumNum < 22 then 
@@ -814,30 +853,29 @@ end
 function loading()
 	gfx.sprite.update()
 	text:drawText("Loading...", 165, 110)
-	scale2 = .5
 	if(loadingFlag) then 
-		--for i = 1, 350 do
+		
 		for i = 1, 375 do
-			--gfx.drawRect(324, 27, 40, 25)
+			
 			
 			if i < 345 then
 				scale += 0.00072
-				--print("Scale: "..i.." - " .. scale)
+				
 				local scaledI <const> = image:scaledImage(scale)
 				imageTableTest[i] = scaledI
 				
 				
 
-				-- =(0.5*10^(0.09*(i)))
+				
 
 			else
-				--gfx.fillRect(324, 27, 20, 25)
-				scale2 =(0.3*10^(0.1*(i-345)))
-				--print("Scale2: "..i.." - " .. scale2)
-				local scaledI <const> = image:scaledImage(scale2)
+				
+				scale =(0.3*10^(0.1*(i-345)))
+				
+				local scaledI <const> = image:scaledImage(scale)
 				imageTableTest[i] = scaledI
 				
-				--scale = (2^(0.013*(i-75)))
+				
 
 				
 			end
@@ -945,6 +983,6 @@ function pd.deviceWillLock()
 	pd.datastore.write(storedData, data)
 end
 
-function playdate.gameWillTerminate()
+function pd.gameWillTerminate()
 	pd.datastore.write(storedData, data)
 end

@@ -35,12 +35,12 @@ function explosion:explode()
 end
 
 function explosion:screenPositionX()
-    self.xd = self.rx - playerMain:getSide() + 200
+    self.xd = self.rx - getSide() + 200
     return self.xd
 end
 function explosion:screenPositionY()
 
-    self.yd = self.ry - playerMain:getUp() + 120
+    self.yd = self.ry - getUp() + 120
     return self.yd
 end
 

@@ -199,7 +199,7 @@ function Plane:audioLocation()
     --clamps plane location to 1600
     if(self.realX > 1600) then self.newNum = self.realX - 1600 else self.newNum = self.realX end
 
-    self.newNum2 = self.newNum - playerMain.side
+    self.newNum2 = self.newNum - getSide()
     --clamps difference to 1600
     if(self.newNum2 < 0) then self.newNum2 += 1600 end
     

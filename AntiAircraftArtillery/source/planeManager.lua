@@ -7,7 +7,7 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local index = 30000
 local player 
-local resetNum
+local resetNum = 0
 local beep
 local beepFlag = false
 local ID
@@ -88,7 +88,7 @@ end
 end
 
 function PlaneManager:tableCount()
-    count = 0
+    local count = 0
     for k, v in pairs(self.planeArray) do  
             count +=1
     end
