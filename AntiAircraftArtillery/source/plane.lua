@@ -3,7 +3,7 @@ import "explosion"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 local planeTime = 44500
-local secondStageTime = 550
+
 
 
 
@@ -19,8 +19,7 @@ function Plane:init(planeArrayGet, dummy, setRealX, setRealY, ID, imageTablePMSe
     self.expSound = expSoundGet
     self.imageTable = imageTablePMSend
 
-    self.distance = playdate.timer.new(planeTime-secondStageTime, 1000, 750, playdate.easingFunctions.inExpo)
-    self.radarDistance = playdate.timer.new(planeTime, 1000, 0, playdate.easingFunctions.linear)
+   self.radarDistance = playdate.timer.new(planeTime, 1000, 0, playdate.easingFunctions.linear)
     self.planeArrayP = planeArrayGet
     self:setImageDrawMode("copy")
     self.health = 100
@@ -81,10 +80,7 @@ end
 
 
 
-function Plane:secondStageTimer()
-        --self.scaleSize2 = playdate.timer.new(secondStageTime, 500, 50000, playdate.easingFunctions.inExpo)
-        self.distance = playdate.timer.new(secondStageTime, 750, 0, playdate.easingFunctions.inExpo)
-end
+
 
 function Plane:getSide()
     return self.realX
@@ -98,29 +94,7 @@ end
 
 
 
---[[function Plane:incrementScale(x,y,x2,y2)
-    local dummySend = 0
 
-    if(self.scaleSize.value/1000 <.5) then
-        self:setScale(self.scaleSize.value/1000)
-        self:setCollideRect(x,y,x2,y2)
-        dummySend = self.scaleSize.value/1000
-
-    elseif(self.scaleSize.value/1000 >=.5) then
-        if(self.scaleSize2 == nil) then 
-             self:secondStageTimer()
-        end
-       self:setScale(self.scaleSize2.value/1000)
-       dummySend = self.scaleSize.value/1000
-    end
-
-    if(self.dummyPlane ~= nil) then
-        self.dummyPlane:incrementScale(dummySend)
-        self.dummyPlane:setCollideRect(x,y,x2,y2)
-    end
-    
-end
---]]
 
 function Plane:advanceSprite()
     if self.offsetNum > 0 then
@@ -134,6 +108,7 @@ function Plane:advanceSprite()
 
             self:setImage(self.imageTable[self.imageNum])
             self:setCollideRect(0,0,x,y)
+
             if(self.dummyPlane ~= nil) then
                 self.dummyPlane:advanceSprite()
                 
@@ -172,26 +147,9 @@ function Plane:advanceSprite()
     end
     
 
-    --if(self.dummyPlane ~= nil) then
-   --     self.dummyPlane:advanceSprite(a)
-    --end
-    --print(self.imageNum .. " == " .. self.ID)
+    
 end
-function Plane:setSprite(a)
-    self.imageNum = a
-    local x = self:getSize(width) 
-    local y = self:getSize(height)*.2
-    local ystart = self:getSize(height) *.2
 
-    --self:setImage(self.imageTable[self.imageNum])
-    self:setImage(self.imageTable[self.imageNum])
-    self:setCollideRect(0,ystart,x,y)
-
-    --if(self.dummyPlane ~= nil) then
-   --     self.dummyPlane:advanceSprite(a)
-    --end
-    --print(self.imageNum .. " == " .. self.ID)
-end
 
 
 

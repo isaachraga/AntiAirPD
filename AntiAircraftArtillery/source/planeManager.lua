@@ -11,7 +11,7 @@ local resetNum = 0
 local beep
 local beepFlag = false
 local ID
-local planeLimit = 1
+local planeLimit = 3
 
 local imageTablePM
 
@@ -29,11 +29,12 @@ function PlaneManager:init(p, imageTableTestSend, beepGet, expSoundGet, apsGet, 
     self.expSoundSend = expSoundGet
     self.apsSend = apsGet
     self.hitMarkerSend = hitMarkerGet
+    planeLimit = 3
 
     self:resetTimer()
     resetNum = math.random(5, 10)
     player = p
-    --self.imageCount = pd.timer.new(25, 0, 1, playdate.easingFunctions.linear)
+
     self.index = index
     self:blinkTimer1Reset()
     self:blinkTimer2Reset()
@@ -46,9 +47,7 @@ function PlaneManager:init(p, imageTableTestSend, beepGet, expSoundGet, apsGet, 
 		noFlashing = true
 	end
 end
---[[function PlaneManager:resetImageCount()
-    self.imageCount = pd.timer.new(25, 0, 1, playdate.easingFunctions.linear)
-end]]--
+
 
 function PlaneManager:setVolumes()
     for k,v in pairs(self.planeArray) do
@@ -67,21 +66,17 @@ function PlaneManager:setPlaneAudioPause(pause)
 end
 
 function PlaneManager:increasePlaneLimit()
-    planeLimit +=1
-    --print(planeLimit)
+    if planeLimit < 7 then
+        planeLimit +=1
+    else
+        planeLimit = 7
+    end
+    
 end
 
 
 
-function PlaneManager:incrementScale()
-    
-   --[[if(self.imageCount.value ==1) then
-        for k,v in pairs(self.planeArray) do
-            v:advanceSprite()
-        end
-        
-   end]]--
-
+function PlaneManager:advanceSprite()
    for k,v in pairs(self.planeArray) do
     v:advanceSprite()
 end
@@ -99,7 +94,7 @@ function PlaneManager:spawnPlane()
     --0-1600//360-120
     local xa = math.random(0, 1599)
     --local xa = 50
-    -- local xa = 1400
+    --local xa = 1400
     local ya = math.random(122, 358)
     --local ya = 358
 
@@ -113,13 +108,13 @@ function PlaneManager:spawnPlane()
 
     elseif(xa >=1350) then 
         ID+=1
-        local p = DummyPlane(xa-1600, ya,  ID, -1600, self.imageTablePM, self.hitMarkerSend)
-        p:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
+        local p = DummyPlane(xa-1600, ya,  ID, self.imageTablePM, self.hitMarkerSend)
+        p:setPosition(xa - getSide() + 200,  ya - getUp() + 120)
         p:setZIndex(index)
         p:add()
 
         local p2 = Plane(self.planeArray, p, xa, ya, ID, self.imageTablePM, self.expSoundSend, self.apsSend, self.hitMarkerSend)
-        p2:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
+        p2:setPosition(xa - getSide() + 200,  ya - getUp() + 120)
         p2:setZIndex(index)
         p:setMainPlane(p2)
         p2:add()
@@ -127,14 +122,14 @@ function PlaneManager:spawnPlane()
 
     elseif(xa <=250) then
         ID+=1
-        local p = DummyPlane(xa+1600, ya, ID, 1600, self.imageTablePM, self.hitMarkerSend)
-        p:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
+        local p = DummyPlane(xa+1600, ya, ID, self.imageTablePM, self.hitMarkerSend)
+        p:setPosition(xa - getSide() + 200,  ya - getUp() + 120)
         p:setZIndex(index)
         p:add()
 
 
         local p2 = Plane(self.planeArray, p, xa, ya, ID, self.imageTablePM, self.expSoundSend, self.apsSend, self.hitMarkerSend)
-        p2:setPosition(xa - player:getSide() + 200,  ya - player:getUp() + 120)
+        p2:setPosition(xa - getSide() + 200,  ya - getUp() + 120)
         p2:setZIndex(index)
         p:setMainPlane(p2)
         p2:add()
@@ -187,13 +182,7 @@ function PlaneManager:radar()
     end
 end
 
---[[function PlaneManager:movePlanes(x,y)
 
-
-    for k,v in pairs(self.planeArray) do
-        v:moveByAdjustment(x,y)
-    end
-end]]--
 function PlaneManager:setPlanes(x,y)
     for k,v in pairs(self.planeArray) do
         xd = v:getSide() - x + 200
@@ -223,10 +212,10 @@ function PlaneManager:resetPlaneHMScale()
 end
 function PlaneManager:planeTrigger()
     if(triggerTimer.value/1000 >= resetNum ) then
-        if(self:tableCount() < planeLimit) then--6
+        if(self:tableCount() < planeLimit) then
             self:resetTimer()
             self:spawnPlane()
-            resetNum = math.random(1, 5)
+            resetNum = math.random(1, 6)
         else
             self:resetTimer()
             resetNum = math.random(1, 9)

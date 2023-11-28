@@ -3,5 +3,5 @@ author=Isaac Hraga
 description=Defend yourself in a turret against endless kamikaze attacks!
 bundleID=com.isaachraga.antiairartillery
 imagePath=images/
-version=0.1.8
+version=1.0.0
 launchSoundPath=sounds/MG

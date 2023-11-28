@@ -10,10 +10,8 @@ local gfx <const> = pd.graphics
 
 class('DummyPlane').extends(gfx.sprite)
 
-function DummyPlane:init(setRealX, setRealY, ID, offset, imageTablePMSend, hitmarkerGet)
-    --print("DUMMY")
+function DummyPlane:init(setRealX, setRealY, ID, imageTablePMSend, hitmarkerGet)
     DummyPlane.super.init(self)
-    self.offset = offset
     self.ID = ID
 
     self.imageTable = imageTablePMSend
@@ -42,45 +40,14 @@ function DummyPlane:setMainPlane(p)
 end
 
 function DummyPlane:advanceSprite()
-    if self.offsetNum > 0 then
-        if self.offsetBool == true then
-			self.offsetBool = false
-			
-            self.imageNum += 1
-            local x = self:getSize(width)
-            local y = self:getSize(height)*.2
-            
+    self.imageNum += 1
+    local x = self:getSize(width)
+    local y = self:getSize(height)*.2
+    
 
-            self:setImage(self.imageTable[self.imageNum])
-            self:setCollideRect(0,0,x,y)
-            
-            self.offsetNumCounter -= 1;
-
-			if self.offsetNumCounter < 1 then 
-			   self.offsetNum-=1
-			   self.offsetNumCounter = 14
-			end
-			
-		else
-			self.offsetBool = true
-			
-		end
-    else
-        
-        self.imageNum += 1
-        local x = self:getSize(width)
-        local y = self:getSize(height)*.2
-        
-        if x > 300 then
-            x = 300
-        end
-        if y > 220 then 
-            y = 220
-        end
-
-        self:setImage(self.imageTable[self.imageNum])
-        self:setCollideRect(0,0,x,y)
-    end
+    self:setImage(self.imageTable[self.imageNum])
+    self:setCollideRect(0,0,x,y)
+    
     
 end
 
@@ -98,9 +65,7 @@ function DummyPlane:getMainPlane()
     return self.mainPlane
 end
 
-function DummyPlane:incrementScale(num)
-       self:setScale(num)  
-end
+
 
 
 

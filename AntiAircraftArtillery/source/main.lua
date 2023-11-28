@@ -12,15 +12,13 @@ import "player"
 import "cannon"
 import "explosion"
 import "animations"
-import "imageTest"
+
 
 --#INFO//
 --commit to github
---remove fps timer
---some dummy planes are the wrong size
---look for pausing bugs
---clean code
---label code
+--thank you to helper on itch
+--decrease click rate
+
 
 
 
@@ -37,7 +35,6 @@ local cas <const> = pd.sound.sampleplayer.new("sounds/CannonExp")
 local ape <const> = pd.sound.sampleplayer.new("sounds/AirplaneExp")
 local click <const> = pd.sound.sampleplayer.new("sounds/Click")
 local aps <const> = pd.sound.sample.new("sounds/AirplaneLoop")
---local aps = pd.sound.sample.new("sounds/AirplaneLoop")
 local hitmarker <const> = gfx.image.new("images/HitMarker")
 local beepSend <const> = pd.sound.sampleplayer.new("sounds/Beep")
 
@@ -65,6 +62,8 @@ local storedData = {}
 --2. aimtypeD
 --3. invertX
 --4. invertY
+--5. Crank Sensitivity
+--6. D Pad Sensitivity
 
 --#CONTROL MENU VARS//
 local aimTypeD = false
@@ -84,7 +83,7 @@ local dPadHighBound = 4
 local gameOver = false
 local xintensity = 1
 local yintensity = .1
-local shotDamage = 13
+local shotDamage = 10
 local rof = 29
 local gunTimer = nil
 local scale = 0.05
@@ -97,6 +96,7 @@ local cannonMain = cannon()
 local playerMain = player()
 local pmMain = PlaneManager(playerMain, imageTableTest,beepSend, ape, aps, hitmarker)
 local gunMain = gun()
+local imageFrameTimer = pd.frameTimer.new(1)
 
 local text <const> = gfx.font.new("font/Asheville-Sans-14-Bold")
 
@@ -118,7 +118,10 @@ local lastMenu = 0
 local menuNum = 0
 local menu = pd.getSystemMenu()
 local menuItem, error = menu:addMenuItem("Controls", function()
-	lastMenu = menuNum
+	if menuNum ~= 3 then
+		lastMenu = menuNum
+	end
+	
 	if(lastMenu == 0) then 
 		ss:setVisible(false) 
 
@@ -149,52 +152,10 @@ end)
 --#INITIALIZERS//
 
 local function initialize()
-	gfx.sprite.update()
-	--imageCount = pd.timer.new(134, 0, 1, playdate.easingFunctions.linear)
-	--imageCount = pd.timer.new(67, 0, 1, playdate.easingFunctions.linear)
-    --loadingFlag = false
-	
-	 
-	--[[scale = .05
-	scaledI = image:scaledImage(scale)
-	testnum = 1
-	offsetNumCounter = 0;
-	offsetBool = false;
-	offsetNumNum = 0;
-	testPlane = gfx.sprite.new(scaledI)
-	testPlane:moveTo(200,50)
-	testPlane:add()]]--
-	--testPlaneScale = 1;
-	--testPlane2 = gfx.sprite.new(scaledI)
-	--testPlane2:moveTo(100,50)
-	--testPlane2:add()
-
-	
-	
-
-	
-
 	pd.setCrankSoundsDisabled(true)
-
-	
-	--local mgs <const> = pd.sound.sampleplayer.new("sounds/MG")
-	--local cas <const> = pd.sound.sampleplayer.new("sounds/CannonExp")
 	cas:setVolume(.8)
-	--local ape <const> = pd.sound.sampleplayer.new("sounds/AirplaneExp")
-	--local click <const> = pd.sound.sampleplayer.new("sounds/Click")
 	click:setVolume(.6)
-	--
-	--
-	-- = pd.sound.sampleplayer.new("sounds/AirplaneExp")
-	--local aps <const> = pd.sound.sampleplayer.new("sounds/AirplaneLoop")
-	-- hitmarker <const> = gfx.image.new("images/HitMarker")
-	--local beepSend <const> = pd.sound.sampleplayer.new("sounds/Beep")
 
-	--
-	--
-
-	--gunTimer = playdate.timer.new(0,0, 0, playdate.easingFunctions.linear)
-	
 	--initailizes datastore or reads previous data
 	if(pd.datastore.read(data) == nil) then
 		storedData[1] = 0
@@ -223,8 +184,6 @@ local function initialize()
 
 	end
     menuNum = -1
-
-	--startInitialize()
 end
 
 
@@ -263,52 +222,45 @@ end
 
 
 function gameInitialize()
-	
 	gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
 	gameOver = false
 	score = 0
+	planeLimitMarker = 5
 	animMain = animations()
 	cannonMain = cannon()
 	playerMain = player()
-	--pmMain = nil
+
 	pmMain = PlaneManager(playerMain, imageTableTest,beepSend, ape, aps, hitmarker)
 	gunMain = gun()
 	gunMain:add()
 
-	
-	
 	bg.rx=1250
 	bg.ry=240
 	bg:moveTo(800,0)
 	bg:setZIndex(0)
 	bg:add()
 
-    
 	ui:moveTo(200,120)
 	ui:add()
 	ui:setZIndex(32766)
 
-	
 	hr:moveTo(111,227)
-	--low 227 high 171
 	hr:add()
 	hr:setZIndex(32767)
 
-	
+
 	mg:moveTo(364,208)
 	mg:add()
 	mg:setVisible(false)
 	mg:setZIndex(32767)
 
-	
 	ca:moveTo(36,208)
 	ca:add()
 	ca:setVisible(false)
 	ca:setZIndex(32767)
 
 	pmMain:spawnPlane()
-	--print("Game Init")
 	resetGunTimer()
 
 	imageFrameTimer = pd.frameTimer.new(1)
@@ -318,17 +270,14 @@ function gameInitialize()
 end
 
 function gameOverInitialize()
-	
 	gfx.sprite:removeAll()
 	menuNum = 2
 	gameOver = true
 	cannonMain = nil
 	gunMain = nil
 	playerMain = nil
-	--pmMain = nil
 	animMain = nil
 
-	
 	gg = gfx.sprite.new(endImage)
 	gg:moveTo(200,120)
 	gg:add()
@@ -357,7 +306,6 @@ initialize()
 
 
 --#GAME FUNCTIONS//
-
 function getGameOver()
 	return gameOver
 end
@@ -367,19 +315,18 @@ end
 
 local function gunLocation(x,y)
 --controls frequency of the crank click
-	if(crankSoundx > 70) then 
+	if(crankSoundx > 100) then 
 		click:play()
 		crankSoundx = 0
 	end
 
-	if(crankSoundy > 210) then 
+	if(crankSoundy > 240) then 
 		click:play()
 		crankSoundy = 0
 	end
 
 	--moves assets according to where the gun is pointing
 	local upcheck = playerMain:getUp() + (y * yintensity)
-	--local sidecheck = playerMain:getSide() + (x * xintensity)
 
 	if(upcheck <= 360 and upcheck >= 120 and x == 0) then 
 		playerMain:setUp(playerMain:getUp() + (y * yintensity))
@@ -582,7 +529,7 @@ end
 
 function startUpdate()
 	pd.timer.updateTimers()
-	
+
    text:drawText("   Start", 293, 170)
    gfx.drawText("Ⓐ", 280, 170)
    text:drawText("   Controls", 283, 200)
@@ -654,6 +601,7 @@ end
 
 
 function controlsUpdate()
+	gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
 	if(invertX) then gfx.drawRect(324, 27, 22, 25) end
 	if(invertY) then gfx.drawRect(353, 27, 22, 25) end
@@ -736,17 +684,23 @@ function controlsUpdate()
 			else
 				ca:setVisible(false)
 			end
-			if(lastMenu == 1) then
-				for k, v in pairs(pd.timer.allTimers()) do
-					v:start()
-				end
+
+			for k, v in pairs(pd.timer.allTimers()) do
+				v:start()
 			end
+			
 		elseif(lastMenu == 2) then
 			gg:setVisible(true)
 		end
 		menuNum = lastMenu
 		click:play()
 		option = 0
+
+		if(lastMenu == 1) then
+			
+			resetFrameCount()
+		end
+		
 	end
 
 	if pd.buttonJustPressed(pd.kButtonLeft) then
@@ -809,6 +763,7 @@ end
 
 
 function resetFrameCount()
+	--plane size testing snippet
 	--[[if offsetNumNum < 22 then 
 		offsetNumCounter += 1
 
@@ -842,7 +797,7 @@ function resetFrameCount()
 	if gameOver == false and menuNum==1 then
 		imageFrameTimer = pd.frameTimer.new(1)
 		imageFrameTimer.timerEndedCallback = function(timer)
-			pmMain:incrementScale()
+			pmMain:advanceSprite()
 			if gameOver == false and menuNum==1 then
 				resetFrameCount()
 			end
@@ -890,6 +845,8 @@ function loading()
 		menuNum = 0
 		startInitialize()
 
+		--plane size testing snippet
+
 		--[[p = imageTest(imageTableTest)
 		p:moveTo(300, 50)
         p:add()
@@ -918,7 +875,7 @@ function loading2()
 	gfx.sprite.update()
 	pd.timer.updateTimers()
 
-	pd.drawFPS(0,0)
+	
 	
 	
 	
@@ -947,7 +904,7 @@ function pd.update()
 	gfx.sprite.update()
 	pd.frameTimer.updateTimers()
 
-	pd.drawFPS(0,0)
+	--pd.drawFPS(0,0)
 
 	if(menuNum == 0) then
 		startUpdate()
