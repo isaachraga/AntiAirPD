@@ -15,14 +15,6 @@ import "animations"
 
 
 --#INFO//
---commit to github
---thank you to helper on itch
---decrease click rate
-
-
-
-
-
 --plane's actual location is stored in realX, realY
 --plane's location in reference to the screan is adjustedX, adjustedY
 
@@ -83,7 +75,7 @@ local dPadHighBound = 4
 local gameOver = false
 local xintensity = 1
 local yintensity = .1
-local shotDamage = 10
+local shotDamage = 8
 local rof = 29
 local gunTimer = nil
 local scale = 0.05
@@ -529,7 +521,7 @@ end
 
 function startUpdate()
 	pd.timer.updateTimers()
-
+	text:drawText("by Isaac Hraga", 145, 100)
    text:drawText("   Start", 293, 170)
    gfx.drawText("Ⓐ", 280, 170)
    text:drawText("   Controls", 283, 200)
@@ -579,12 +571,12 @@ function gameOverUpdate()
 			if(newHighScore == true) then
 				text:drawText("*New High Score*: " .. tostring(v).."", 130,120)
 			else
-				text:drawText("High Score: " .. tostring(v), 160,120)
+				text:drawText("High Score: " .. tostring(v), 144,120)
 			end
 		end
 	end
 
-	text:drawText("Your Score: " .. tostring(score), 158,147)
+	text:drawText("Your Score: " .. tostring(score), 148,147)
 
 	text:drawText("       Restart                             Controls", 68, 210)
 	gfx.drawText("Ⓐ", 68, 210)

@@ -215,10 +215,10 @@ function PlaneManager:planeTrigger()
         if(self:tableCount() < planeLimit) then
             self:resetTimer()
             self:spawnPlane()
-            resetNum = math.random(1, 6)
+            resetNum = math.random(1, 5)
         else
             self:resetTimer()
-            resetNum = math.random(1, 9)
+            resetNum = math.random(1, 3)
         end
         
     end

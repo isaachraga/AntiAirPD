@@ -14,8 +14,8 @@ function gun:init()
 end
 
 function gun:shoot()
-    x = math.random(20)+188
-    y = math.random(20)+110
+    x = math.random(26)+185
+    y = math.random(26)+107
     gfx.fillRect(x,y,scale,scale)
 
     self:setCollideRect(x,y,7,7)
